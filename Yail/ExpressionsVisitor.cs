@@ -125,7 +125,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
     {
         var functionName = context.IDENTIFIER().GetText();
 
-        if (functionName == "print")
+        if (functionName == YailTokens.Print)
         {
             foreach (var exprContext in context.expression())
             {
@@ -137,7 +137,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             }
             return null; 
         }
-        if (functionName == "println")
+        if (functionName == YailTokens.PrintLn)
         {
             foreach (var exprContext in context.expression())
             {
