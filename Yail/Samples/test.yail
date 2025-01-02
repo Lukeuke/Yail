@@ -1,9 +1,6 @@
-﻿var x = 5;
+﻿var x = "";
 
-funky addNumbers(i32 a, i32 b) any {
-    return a + "test";
-}
+println("type something:");
+x = parseInt(input());
 
-x = addNumbers(3, 5);
-
-println(x);
+println(x + 6);

@@ -16,6 +16,26 @@ println(y);
 - i32 -> Integer
 - any -> dynamically sets the proper return type
 
+## I/O
+
+```js
+var x = "";
+
+println("type something:");
+x = input();
+
+println(x);
+```
+
+### Parsing
+```js
+var x = "5";
+
+x = parseInt(x);
+
+println(x + 6);
+// output: 11
+```
 
 ### While-loops
 ```js

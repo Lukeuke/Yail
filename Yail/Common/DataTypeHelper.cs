@@ -14,7 +14,8 @@ public static class DataTypeHelper
             { "bool", EDataType.Boolean },
             { "char", EDataType.Char },
             { "null", EDataType.Null },
-            { "any", EDataType.Any }
+            { "any", EDataType.Any },
+            { "void", EDataType.Void },
         };
 
         if (!dict.TryGetValue(val, out var result))

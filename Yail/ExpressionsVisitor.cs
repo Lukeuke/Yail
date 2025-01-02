@@ -31,7 +31,13 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
     {
         var variableName = context.IDENTIFIER().GetText();
         var value = Visit(context.expression());
+        if (value is null) return null;
 
+        if (value.Value.DataType is EDataType.Void)
+        {
+            return null;
+        }
+        
         if (!_variables.TryGetValue(variableName, out _))
         {
             Console.ForegroundColor = ConsoleColor.Red;
@@ -50,6 +56,13 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
 
         _variables.TryGetValue(variableName, out var value);
 
+        if (value is null) return null;
+        
+        if (value.Value.DataType is EDataType.Void)
+        {
+            return null;
+        }
+        
         if (value is null)
         {
             Console.ForegroundColor = ConsoleColor.Red;
@@ -166,6 +179,52 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             return null; 
         }
 
+        if (functionName == YailTokens.Input)
+        {
+            var inputValue = Console.ReadLine();
+
+            var result = new ValueObj
+            {
+                DataType = EDataType.String,
+                Value = inputValue
+            };
+
+            return result;
+        }
+        
+        if (functionName == YailTokens.ParseInt)
+        {
+            if (context.expression().Length != 1)
+            {
+                throw new InvalidOperationException("ParseInt requires exactly one argument.");
+            }
+
+            var argument = Visit(context.expression(0));
+            return IoHelper.ParseInt((ValueObj)argument);
+        }
+        
+        if (functionName == YailTokens.ParseDouble)
+        {
+            if (context.expression().Length != 1)
+            {
+                throw new InvalidOperationException("ParseDouble requires exactly one argument.");
+            }
+
+            var argument = Visit(context.expression(0));
+            return IoHelper.ParseDouble((ValueObj)argument);
+        }
+        
+        if (functionName == YailTokens.ParseBool)
+        {
+            if (context.expression().Length != 1)
+            {
+                throw new InvalidOperationException("ParseBool requires exactly one argument.");
+            }
+
+            var argument = Visit(context.expression(0));
+            return IoHelper.ParseBool((ValueObj)argument);
+        }
+        
         if (_functions.TryGetValue(functionName, out var functionInfo))
         {
             // Collect arguments for the function call
@@ -209,6 +268,16 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
                 }
             }
 
+            if (functionInfo.ReturnType == EDataType.Void)
+            {
+                return new ValueObj
+                {
+                    DataType = EDataType.Void,
+                    Value = null,
+                    IsConst = true
+                };
+            }
+            
             _variables = currentScope;
 
             var returnValue = returnValueFromFunction;
