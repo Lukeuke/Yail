@@ -1,4 +1,5 @@
-﻿using Yail.Grammar;
+﻿using Yail.Common;
+using Yail.Grammar;
 
 namespace Yail;
 
@@ -19,7 +20,7 @@ public struct ValueObj
     public EDataType DataType;
 }
 
-public class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
+public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
 {
     private Dictionary<string, ValueObj?> _variables = new();
 
@@ -55,6 +56,45 @@ public class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         _variables[variableName] = value;
         
         return null;
+    }
+
+    public override ValueObj? VisitIdentifierExpr(ExpressionsParser.IdentifierExprContext context)
+    {
+        var variableName = context.IDENTIFIER().GetText();
+
+        _variables.TryGetValue(variableName, out var value);
+
+        if (value is null)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Error.WriteLine($"Variable '${variableName}' is not defined.");
+            Environment.Exit(1);
+        }
+        
+        return value;
+    }
+
+    public override ValueObj? VisitAddOp(ExpressionsParser.AddOpContext context)
+    {
+        return base.VisitAddOp(context);
+    }
+
+    public override ValueObj? VisitAddExpr(ExpressionsParser.AddExprContext context)
+    {
+        var left = Visit(context.expression(0));
+        var right  = Visit(context.expression(1));
+
+        left.ThrowIfNull();
+        right.ThrowIfNull();
+
+        var newValue = context.addOp().GetText() switch
+        {
+            "+" => OperationsHelper.Add((ValueObj)left, (ValueObj)right),
+            "-" => OperationsHelper.Subtract((ValueObj)left, (ValueObj)right),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+        return newValue;
     }
 
     public override ValueObj? VisitConstant(ExpressionsParser.ConstantContext context)
