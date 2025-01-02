@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yail", "Yail\Yail.csproj", "{7CAC884C-E484-48B0-AF7E-D17BD0005237}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yail.Tests", "Yail.Tests\Yail.Tests.csproj", "{CE4CB8B9-C7B7-4F38-9A60-C28E86B455B7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7CAC884C-E484-48B0-AF7E-D17BD0005237}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7CAC884C-E484-48B0-AF7E-D17BD0005237}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7CAC884C-E484-48B0-AF7E-D17BD0005237}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7CAC884C-E484-48B0-AF7E-D17BD0005237}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE4CB8B9-C7B7-4F38-9A60-C28E86B455B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE4CB8B9-C7B7-4F38-9A60-C28E86B455B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE4CB8B9-C7B7-4F38-9A60-C28E86B455B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE4CB8B9-C7B7-4F38-9A60-C28E86B455B7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

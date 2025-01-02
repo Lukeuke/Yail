@@ -1,0 +1,9 @@
+var x = 3;
+x = 5;
+
+var y = "hello";
+y = "world";
+
+var z = 3.5;
+var isTrue = true;
+var character = 'e';
