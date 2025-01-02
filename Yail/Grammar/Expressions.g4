@@ -22,6 +22,8 @@ addOp: '+' | '-';
 compareOp: '==' | '!=' | '>' | '<' | '>=' | '<=';
 boolOp: 'and' | 'or' | 'xor';
 
+break: 'break';
+
 expression
     : constant                               #constantExpr
     | IDENTIFIER                             #identifierExpr
@@ -41,10 +43,9 @@ constant: INTEGER | DOUBLE | STRING | BOOL | CHAR | NULL;
 assignment: IDENTIFIER '=' expression;
 functionCall: IDENTIFIER '(' (expression (',' expression)*)? ')';
 
-statement: (variableCreation|assignment|functionCall) ';';
+statement: (variableCreation|assignment|functionCall|break) ';';
 
 ifBlock: 'if' expression block ('else' elseIfBlock);
 elseIfBlock: block | ifBlock;
 
 whileBlock: WHILE expression block ('else' elseIfBlock);
-

@@ -1,4 +1,11 @@
-﻿var x = 3;
-var z = x + 3.5;
+﻿var x = 5;
 
-println(z);
+while x <= 0 {
+    println(x);
+    x = x - 1;
+}
+
+while true {
+    println("break example");
+    break;
+}

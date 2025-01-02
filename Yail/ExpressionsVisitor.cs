@@ -172,4 +172,63 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         throw new InvalidOperationException($"Undefined function: {functionName}");
     }
 
+    public override ValueObj? VisitCompareExpr(ExpressionsParser.CompareExprContext context)
+    {
+        var left = Visit(context.expression(0));
+        var right  = Visit(context.expression(1));
+        
+        left.ThrowIfNull();
+        right.ThrowIfNull();
+        
+        var newValue = context.compareOp().GetText() switch
+        {
+            "==" => Equals((ValueObj)left, (ValueObj)right),
+            "!=" => !Equals((ValueObj)left, (ValueObj)right),
+            ">" => OperationsHelper.Compare((ValueObj)left, (ValueObj)right),
+            "<" => OperationsHelper.Compare((ValueObj)left, (ValueObj)right),
+            ">=" => OperationsHelper.Compare((ValueObj)left, (ValueObj)right),
+            "<=" => OperationsHelper.Compare((ValueObj)left, (ValueObj)right),
+            _ => throw new ArgumentOutOfRangeException($"Unknown comparison operator: {context.compareOp().GetText()}")
+        };
+
+        return new ValueObj
+        {
+            Value = newValue,
+            DataType = EDataType.Boolean
+        };
+    }
+
+    private bool _shouldBreak;
+    public override ValueObj? VisitWhileBlock(ExpressionsParser.WhileBlockContext context)
+    {
+        while (EvaluateCondition(context.expression()))
+        {
+            _shouldBreak = false;
+
+            Visit(context.block());
+
+            if (_shouldBreak)
+                break;
+        }
+        
+        return null;
+    }
+
+    private bool EvaluateCondition(ExpressionsParser.ExpressionContext conditionContext)
+    {
+        var conditionResult = Visit(conditionContext);
+
+        if (!conditionResult.HasValue || conditionResult.Value.DataType != EDataType.Boolean)
+        {
+            throw new InvalidOperationException("Condition in 'while' must evaluate to a boolean value.");
+        }
+
+        return (bool)conditionResult.Value.Value!;
+    }
+    
+    public override ValueObj? VisitBreak(ExpressionsParser.BreakContext context)
+    {
+        _shouldBreak = true;
+        return null;
+    }
 }
