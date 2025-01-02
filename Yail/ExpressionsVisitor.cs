@@ -119,4 +119,38 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         
         return result;
     }
+
+    // TODO: refactor
+    public override ValueObj? VisitFunctionCall(ExpressionsParser.FunctionCallContext context)
+    {
+        var functionName = context.IDENTIFIER().GetText();
+
+        if (functionName == "print")
+        {
+            foreach (var exprContext in context.expression())
+            {
+                var valueObj = Visit(exprContext);
+                if (valueObj != null)
+                {
+                    Console.Write(valueObj.Value.Value);
+                }
+            }
+            return null; 
+        }
+        if (functionName == "println")
+        {
+            foreach (var exprContext in context.expression())
+            {
+                var valueObj = Visit(exprContext);
+                if (valueObj != null)
+                {
+                    Console.WriteLine(valueObj.Value.Value);
+                }
+            }
+            return null; 
+        }
+
+        throw new InvalidOperationException($"Undefined function: {functionName}");
+    }
+
 }
