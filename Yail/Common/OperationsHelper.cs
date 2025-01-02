@@ -106,4 +106,95 @@ public static class OperationsHelper
 
         throw new InvalidOperationException($"Unsupported data types for subtraction: {left.DataType} and {right.DataType}");
     }
+    
+    public static ValueObj Multiply(ValueObj left, ValueObj right)
+    {
+        if (left.Value == null || right.Value == null)
+            throw new InvalidOperationException("Cannot multiply null values.");
+
+        if (left.DataType == EDataType.Integer && right.DataType == EDataType.Integer)
+        {
+            return new ValueObj
+            {
+                IsConst = false,
+                Value = (int)left.Value * (int)right.Value,
+                DataType = EDataType.Integer
+            };
+        }
+
+        if (left.DataType == EDataType.Double || right.DataType == EDataType.Double)
+        {
+            var leftValue = Convert.ToDouble(left.Value);
+            var rightValue = Convert.ToDouble(right.Value);
+
+            return new ValueObj
+            {
+                IsConst = false,
+                Value = leftValue * rightValue,
+                DataType = EDataType.Double
+            };
+        }
+
+        throw new InvalidOperationException("Multiplication is not supported for these data types.");
+    }
+    
+    public static ValueObj Divide(ValueObj left, ValueObj right)
+    {
+        if (left.Value == null || right.Value == null)
+            throw new InvalidOperationException("Cannot divide null values.");
+
+        if (right.DataType == EDataType.Integer && (int)right.Value == 0 || 
+            right.DataType == EDataType.Double && (double)right.Value == 0.0)
+        {
+            throw new DivideByZeroException("Cannot divide by zero.");
+        }
+
+        if (left.DataType == EDataType.Integer && right.DataType == EDataType.Integer)
+        {
+            return new ValueObj
+            {
+                IsConst = false,
+                Value = (int)left.Value / (int)right.Value,
+                DataType = EDataType.Integer
+            };
+        }
+
+        if (left.DataType == EDataType.Double || right.DataType == EDataType.Double)
+        {
+            var leftValue = Convert.ToDouble(left.Value);
+            var rightValue = Convert.ToDouble(right.Value);
+
+            return new ValueObj
+            {
+                IsConst = false,
+                Value = leftValue / rightValue,
+                DataType = EDataType.Double
+            };
+        }
+
+        throw new InvalidOperationException("Division is not supported for these data types.");
+    }
+    
+    public static ValueObj Modulo(ValueObj left, ValueObj right)
+    {
+        if (left.Value == null || right.Value == null)
+            throw new InvalidOperationException("Cannot perform modulo on null values.");
+
+        if (right.DataType == EDataType.Integer && (int)right.Value == 0)
+        {
+            throw new DivideByZeroException("Cannot modulo by zero.");
+        }
+
+        if (left.DataType == EDataType.Integer && right.DataType == EDataType.Integer)
+        {
+            return new ValueObj
+            {
+                IsConst = false,
+                Value = (int)left.Value % (int)right.Value,
+                DataType = EDataType.Integer
+            };
+        }
+
+        throw new InvalidOperationException("Modulo is only supported for integer types.");
+    }
 }

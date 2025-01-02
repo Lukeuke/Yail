@@ -81,6 +81,25 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         return newValue;
     }
 
+    public override ValueObj? VisitMultiplyExpr(ExpressionsParser.MultiplyExprContext context)
+    {
+        var left = Visit(context.expression(0));
+        var right  = Visit(context.expression(1));
+
+        left.ThrowIfNull();
+        right.ThrowIfNull();
+        
+        var newValue = context.multiplyOp().GetText() switch
+        {
+            "*" => OperationsHelper.Multiply((ValueObj)left, (ValueObj)right),
+            "/" => OperationsHelper.Divide((ValueObj)left, (ValueObj)right),
+            "%" => OperationsHelper.Modulo((ValueObj)left, (ValueObj)right),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+        return newValue;
+    }
+
     public override ValueObj? VisitConstant(ExpressionsParser.ConstantContext context)
     {
         var result = new ValueObj();
