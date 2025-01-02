@@ -1,9 +1,9 @@
 ﻿var x = 5;
 
-while x >= 0 {
-    if x % 2 == 0 {
-        println(x + " number is even");
-    }
-
-    x = x - 1;
+funky addNumbers(i32 a, i32 b) any {
+    return a + "test";
 }
+
+x = addNumbers(3, 5);
+
+println(x);

@@ -9,41 +9,46 @@ BOOL: 'true' | 'false';
 CHAR: '\'' . '\'';
 NULL: 'null';
 WS: [ \t\r\n]+ -> skip;
-DATA_TYPES: 'i16' | 'i32' | 'int' | 'i64' | 'string' | 'bool' | 'char' | 'double';
+DATA_TYPES: 'i16' | 'i32' | 'i64' | 'string' | 'bool' | 'char' | 'double' | 'any';
 IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;
 
 // grammar
 program: line* EOF;
-line: statement | ifBlock | whileBlock;
+line: statement | ifBlock | whileBlock | functionDeclaration | return;
 block: '{' line* '}';
 
 multiplyOp: '*' | '/' | '%';
 addOp: '+' | '-';
 compareOp: '==' | '!=' | '>' | '<' | '>=' | '<=';
-boolOp: 'and' | 'or' | 'xor';
+boolOp: 'and' | 'or' | 'xor'; // TODO:
 
 break: 'break';
+return: 'return' expression;
 
 expression
     : constant                               #constantExpr
     | IDENTIFIER                             #identifierExpr
     | functionCall                           #functionCallExpr
     | '(' expression ')'                     #parenthesizedExpr
-    | '!' expression                         #negationExpr
+    | '!' expression                         #negationExpr // TODO:
     | expression multiplyOp expression       #multiplyExpr
     | expression addOp expression            #addExpr
     | expression compareOp expression        #compareExpr
-    | expression boolOp expression           #boolExpr
+    | expression boolOp expression           #boolExpr // TODO:
     ;
 
-variableCreation: 'var' IDENTIFIER '=' expression;
+variableDeclaration: 'var' IDENTIFIER '=' expression;
+functionDeclaration: 'funky' IDENTIFIER '(' (parameterList)? ')' DATA_TYPES block;
+
+parameterList: parameter (',' parameter)*;
+parameter: DATA_TYPES IDENTIFIER;
 
 constant: INTEGER | DOUBLE | STRING | BOOL | CHAR | NULL;
         
 assignment: IDENTIFIER '=' expression;
 functionCall: IDENTIFIER '(' (expression (',' expression)*)? ')';
 
-statement: (variableCreation|assignment|functionCall|break) ';';
+statement: (variableDeclaration | assignment | functionCall | break | return) ';';
 
 ifBlock: 'if' expression block ('else' elseIfBlock);
 elseIfBlock: block | ifBlock;

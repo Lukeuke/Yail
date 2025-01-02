@@ -12,11 +12,16 @@ println(y);
 // output: 6
 ```
 
+### Data types
+- i32 -> Integer
+- any -> dynamically sets the proper return type
+
+
 ### While-loops
 ```js
 var x = 5;
 
-while x <= 0 {
+while x >= 0 {
     println(x);
     x = x - 1;
 }
@@ -25,6 +30,38 @@ while true {
     println("break example");
     break;
 }
+
+```
+### If-statements
+```js
+var x = 5;
+
+if x > 10 {
+  println(":D");
+}
+else if x < 10 {
+  println(":(");
+}
+else {
+  println("???");
+}
+````
+
+### Functions
+
+```js
+var x = 5;
+
+funky addNumbers(i32 a, i32 b) i32 {
+
+    println(x); // <- NOTE: value not accessable here
+
+    return a + b;
+}
+
+x = addNumbers(3, 5);
+
+println(x);
 ```
 
 ### Supports

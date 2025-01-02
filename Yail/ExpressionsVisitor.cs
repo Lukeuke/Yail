@@ -7,8 +7,10 @@ namespace Yail;
 public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
 {
     private Dictionary<string, ValueObj?> _variables = new();
+    private Dictionary<string, FunctionDefinition> _functions = new();
+    private ValueObj? returnValueFromFunction;
 
-    public override ValueObj? VisitVariableCreation(ExpressionsParser.VariableCreationContext context)
+    public override ValueObj? VisitVariableDeclaration(ExpressionsParser.VariableDeclarationContext context)
     {
         var variableName = context.IDENTIFIER().GetText();
         var value = Visit(context.expression());
@@ -56,11 +58,6 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         }
         
         return value;
-    }
-
-    public override ValueObj? VisitAddOp(ExpressionsParser.AddOpContext context)
-    {
-        return base.VisitAddOp(context);
     }
 
     public override ValueObj? VisitAddExpr(ExpressionsParser.AddExprContext context)
@@ -169,6 +166,68 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             return null; 
         }
 
+        if (_functions.TryGetValue(functionName, out var functionInfo))
+        {
+            // Collect arguments for the function call
+            var arguments = new List<ValueObj?>();
+            foreach (var exprContext in context.expression())
+            {
+                var value = Visit(exprContext);
+                arguments.Add(value);
+            }
+
+            // Check if the number of arguments matches
+            if (arguments.Count != functionInfo.Parameters.Count)
+            {
+                throw new InvalidOperationException($"Function '{functionName}' expects {functionInfo.Parameters.Count} parameters.");
+            }
+
+            // Create a new scope for function parameters
+            var functionScope = new Dictionary<string, ValueObj?>();
+            for (var i = 0; i < arguments.Count; i++)
+            {
+                functionScope[functionInfo.Parameters[i].Name] = arguments[i];
+            }
+
+            // Save the current variable scope and switch to the function's scope
+            var currentScope = _variables;
+            _variables = new Dictionary<string, ValueObj?>(functionScope);
+
+            var body = functionInfo.Body as ExpressionsParser.BlockContext;
+            foreach (var statementContext in body.line())
+            {
+                if (returnValueFromFunction is not null)
+                {
+                    break;
+                }
+
+                _ = Visit(statementContext);
+
+                if (returnValueFromFunction is not null)
+                {
+                    break;
+                }
+            }
+
+            _variables = currentScope;
+
+            var returnValue = returnValueFromFunction;
+
+            // dynamically set the function return type if any
+            if (functionInfo.ReturnType == EDataType.Any)
+            {
+                functionInfo.ReturnType = returnValue.Value.DataType;
+            }
+            
+            if (returnValue.Value.DataType != functionInfo.ReturnType)
+            {
+                throw new Exception($"Return type does not match on function {functionName}.\nExpected: '{returnValue.Value.DataType}' was '{functionInfo.ReturnType}'."); // TODO: implement custom exceptions
+            }
+            
+            returnValueFromFunction = null;
+            return returnValue;
+        }
+        
         throw new InvalidOperationException($"Undefined function: {functionName}");
     }
 
@@ -238,17 +297,51 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
     {
         var conditionResult = Visit(conditionContext);
 
-        if (!conditionResult.HasValue || conditionResult.Value.DataType != EDataType.Boolean)
+        if (conditionResult is null || conditionResult.Value.DataType != EDataType.Boolean)
         {
-            throw new InvalidOperationException("Condition in 'while' must evaluate to a boolean value.");
+            throw new InvalidOperationException("Condition in must evaluate to a boolean value.");
         }
 
         return (bool)conditionResult.Value.Value!;
+    }
+
+    public override ValueObj? VisitReturn(ExpressionsParser.ReturnContext context)
+    {
+        var returnValue = Visit(context.expression());
+
+        returnValueFromFunction = returnValue;
+
+        return returnValue;
     }
     
     public override ValueObj? VisitBreak(ExpressionsParser.BreakContext context)
     {
         _shouldBreak = true;
+        return null;
+    }
+
+    public override ValueObj? VisitFunctionDeclaration(ExpressionsParser.FunctionDeclarationContext context)
+    {
+        var functionName = context.IDENTIFIER().GetText();
+        
+        var returnType = context.DATA_TYPES().GetText();
+        
+        var parameters = new List<(string, string)>();
+        if (context.parameterList() != null)
+        {
+            foreach (var paramContext in context.parameterList().parameter())
+            {
+                var paramType = paramContext.DATA_TYPES().GetText();
+                var paramName = paramContext.IDENTIFIER().GetText();
+                parameters.Add((paramType, paramName));
+            }
+        }
+
+        var body = context.block();
+
+        var functionInfo = new FunctionDefinition(functionName, returnType.ToDataType(), parameters, body);
+        _functions[functionName] = functionInfo;
+
         return null;
     }
 }

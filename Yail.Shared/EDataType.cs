@@ -3,6 +3,7 @@
 public enum EDataType
 {
     Null,
+    Any,
     Integer,
     Boolean,
     Char,
