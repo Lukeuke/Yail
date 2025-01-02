@@ -19,4 +19,8 @@
       <Content Include="Grammar\Expressions.g4" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Yail.Shared\Yail.Shared.csproj" />
+    </ItemGroup>
+
 </Project>

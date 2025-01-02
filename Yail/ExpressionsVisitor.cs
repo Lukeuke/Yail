@@ -1,24 +1,8 @@
 ﻿using Yail.Common;
 using Yail.Grammar;
+using Yail.Shared;
 
 namespace Yail;
-
-public enum EDataType
-{
-    Null,
-    Integer,
-    Boolean,
-    Char,
-    String,
-    Double
-}
-
-public struct ValueObj
-{
-    public bool IsConst;
-    public object? Value;
-    public EDataType DataType;
-}
 
 public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
 {

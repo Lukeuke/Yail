@@ -1,4 +1,6 @@
-﻿namespace Yail.Common;
+﻿using Yail.Shared;
+
+namespace Yail.Common;
 
 public static class ExceptionHelper
 {
