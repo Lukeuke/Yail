@@ -5,7 +5,7 @@ var z = 5 * 2;
 var z1 = z / 2;
 var z2 = z1 % 2;
 
-println(y);
-println(z);
-println(z1);
-println(z2);
+println("y:" + y);
+println("z:" + z);
+println("z1:" + z1);
+println("z2: " + z2);

@@ -127,7 +127,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         }
         else if (context.DOUBLE() is not null)
         {
-            result.DataType = EDataType.String;
+            result.DataType = EDataType.Double;
             result.Value = double.Parse(value.Replace(".", ","));
         }
         else if (context.NULL() is not null)

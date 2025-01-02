@@ -2,7 +2,7 @@
 using Yail;
 using Yail.Grammar;
 
-var input = File.ReadAllText("""C:\Users\Luuqe\RiderProjects\yail\Yail\Samples\working_on_variables.yail""");
+var input = File.ReadAllText("""C:\Users\Luuqe\RiderProjects\yail\Yail\Samples\test.yail""");
 
 if (args.Length > 0)
 {

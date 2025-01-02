@@ -9,8 +9,8 @@ BOOL: 'true' | 'false';
 CHAR: '\'' . '\'';
 NULL: 'null';
 WS: [ \t\r\n]+ -> skip;
-IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;
 DATA_TYPES: 'i16' | 'i32' | 'int' | 'i64' | 'string' | 'bool' | 'char' | 'double';
+IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;
 
 // grammar
 program: line* EOF;
