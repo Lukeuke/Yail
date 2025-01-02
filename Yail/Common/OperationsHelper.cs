@@ -198,19 +198,19 @@ public static class OperationsHelper
         throw new InvalidOperationException("Modulo is only supported for integer types.");
     }
     
-    public static bool Compare(ValueObj left, ValueObj right)
+    public static int Compare(ValueObj left, ValueObj right)
     {
         if (left.DataType == EDataType.Integer && right.DataType == EDataType.Integer)
         {
-            return ((int)left.Value).CompareTo((int)right.Value) != 0;
+            return ((int)left.Value).CompareTo((int)right.Value);
         }
         if (left.DataType == EDataType.Double && right.DataType == EDataType.Double)
         {
-            return ((double)left.Value).CompareTo((double)right.Value) != 0;
+            return ((double)left.Value).CompareTo((double)right.Value);
         }
         if (left.DataType == EDataType.String && right.DataType == EDataType.String)
         {
-            return ((string)left.Value).CompareTo((string)right.Value) != 0;
+            return ((string)left.Value).CompareTo((string)right.Value);
         }
 
         throw new InvalidOperationException("Cannot compare values of different or unsupported types.");

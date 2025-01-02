@@ -1,11 +1,9 @@
 ﻿var x = 5;
 
-while x <= 0 {
-    println(x);
-    x = x - 1;
-}
+while x >= 0 {
+    if x % 2 == 0 {
+        println(x + " number is even");
+    }
 
-while true {
-    println("break example");
-    break;
+    x = x - 1;
 }

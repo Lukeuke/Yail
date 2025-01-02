@@ -184,18 +184,38 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         {
             "==" => Equals((ValueObj)left, (ValueObj)right),
             "!=" => !Equals((ValueObj)left, (ValueObj)right),
-            ">" => OperationsHelper.Compare((ValueObj)left, (ValueObj)right),
-            "<" => OperationsHelper.Compare((ValueObj)left, (ValueObj)right),
-            ">=" => OperationsHelper.Compare((ValueObj)left, (ValueObj)right),
-            "<=" => OperationsHelper.Compare((ValueObj)left, (ValueObj)right),
+            ">" => OperationsHelper.Compare((ValueObj)left, (ValueObj)right) > 0,
+            "<" => OperationsHelper.Compare((ValueObj)left, (ValueObj)right) < 0,
+            ">=" => OperationsHelper.Compare((ValueObj)left, (ValueObj)right) >= 0,
+            "<=" => OperationsHelper.Compare((ValueObj)left, (ValueObj)right) <= 0,
             _ => throw new ArgumentOutOfRangeException($"Unknown comparison operator: {context.compareOp().GetText()}")
         };
 
         return new ValueObj
         {
+            IsConst = true,
             Value = newValue,
             DataType = EDataType.Boolean
         };
+    }
+
+    public override ValueObj? VisitIfBlock(ExpressionsParser.IfBlockContext context)
+    {
+        var conditionResult = EvaluateCondition(context.expression());
+
+        if (conditionResult)
+        {
+            Visit(context.block());
+        }
+        else
+        {
+            if (context.elseIfBlock() != null)
+            {
+                Visit(context.elseIfBlock());
+            }
+        }
+
+        return null;
     }
 
     private bool _shouldBreak;
