@@ -1,24 +1,12 @@
-﻿funky abs(i32 value) i32 {
-    if value < 0 {
-        return value * -1;
-    }
-    
-    return value;
+﻿using math
+
+package main
+
+funky test() double {
+    return 1.45;
 }
 
-funky pow(i32 value, i32 base) i32 {
-    var result = 1;
-    
-    while base > 0 {
-        result *= value;
-        base -= 1;
-    }
-    
-    return result;
-}
+var x = test();
+x += 1.0;
 
-println(abs(-1));
-println(abs(0));
-println(abs(1));
-
-println(pow(2, 3));
+println(typeof((string)x));

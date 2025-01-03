@@ -15,12 +15,21 @@ public class IoHelper
         {
             return new ValueObj
             {
-                DataType = EDataType.Integer,
+                DataType = EDataType.Int32,
                 Value = result
             };
         }
 
-        throw new InvalidOperationException("Invalid integer string.");
+        if (double.TryParse((string)value.Value, out var result2))
+        {
+            return new ValueObj
+            {
+                DataType = EDataType.Int32,
+                Value = (int)result2
+            };
+        }
+        
+        throw new InvalidOperationException("Invalid i32/double string.");
     }
 
     public static ValueObj ParseDouble(ValueObj value)
@@ -59,5 +68,14 @@ public class IoHelper
         }
 
         throw new InvalidOperationException("Invalid bool string.");
+    }
+
+    public static ValueObj ToString(ValueObj value)
+    {
+        return new ValueObj
+        {
+            DataType = EDataType.String,
+            Value = (string)value.Value!
+        };
     }
 }

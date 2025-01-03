@@ -15,14 +15,15 @@ USE_IDENTIFIERS: 'disable-type-checking';
 
 // grammar
 program: line* EOF;
-line: directive | statement | ifBlock | whileBlock | functionDeclaration | return;
+line: packageDeclaration | usingDirective | directive | statement | ifBlock | whileBlock | functionDeclaration | return;
 block: '{' line* '}';
 directive: '#' 'use' IDENTIFIER ('-' IDENTIFIER)*;
 
 multiplyOp: '*' | '/' | '%';
 addOp: '+' | '-';
 compareOp: '==' | '!=' | '>' | '<' | '>=' | '<=';
-boolOp: 'and' | 'or' | 'xor'; // TODO:
+boolOp: 'and' | 'or' | 'xor';
+accessLevels: 'pub';
 
 break: 'break';
 continue: 'continue'; // TODO:
@@ -37,11 +38,15 @@ expression
     | expression multiplyOp expression       #multiplyExpr
     | expression addOp expression            #addExpr
     | expression compareOp expression        #compareExpr
-    | expression boolOp expression           #boolExpr // TODO:
+    | expression boolOp expression           #boolExpr
+    | '(' DATA_TYPES ')' expression          #castExpr
     ;
 
+packageDeclaration: 'package' IDENTIFIER;
+usingDirective: 'using' IDENTIFIER;
+
 variableDeclaration: 'var' IDENTIFIER '=' expression;
-functionDeclaration: 'funky' IDENTIFIER '(' (parameterList)? ')' DATA_TYPES block;
+functionDeclaration: (accessLevels)? 'funky' IDENTIFIER '(' (parameterList)? ')' DATA_TYPES block;
 
 parameterList: parameter (',' parameter)*;
 parameter: DATA_TYPES IDENTIFIER;
@@ -52,7 +57,10 @@ assignment: IDENTIFIER '=' expression;
 operationAssignment: IDENTIFIER (addOp|multiplyOp) '=' expression;
 selfOperation: ('++'|'--'|'**'|'//')? IDENTIFIER ('++'|'--'|'**'|'//')?;
 
-functionCall: IDENTIFIER '(' (expression (',' expression)*)? ')';
+functionCall
+    : IDENTIFIER '(' (expression (',' expression)*)? ')'                    # simpleFunctionCall
+    | IDENTIFIER '::' IDENTIFIER '(' (expression (',' expression)*)? ')'    # namespacedFunctionCall
+    ;
 
 statement: (variableDeclaration | assignment | operationAssignment | selfOperation | functionCall | break | return) ';';
 

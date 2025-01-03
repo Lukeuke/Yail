@@ -1,0 +1,49 @@
+﻿package math
+
+pub funky abs(i32 value) i32 {
+    if value < 0 {
+        return value * -1;
+    }
+    
+    return value;
+}
+
+pub funky pow(i32 value, i32 base) i32 {
+    var result = 1;
+    
+    while base > 0 {
+        result *= value;
+        base -= 1;
+    }
+    
+    return result;
+}
+
+pub funky floor(double value) i32 {
+    return (i32)value;
+}
+
+pub funky round(double value, i32 floatingPoint) double {
+    var multiplier = 1;
+    
+    var i = 0;
+    while i < floatingPoint {
+        multiplier = multiplier * 10;
+        i++;
+    }
+
+    var scaledValue = value * multiplier;
+    
+    var integerPart = floor(scaledValue);
+    
+    var decimalPart = scaledValue - integerPart;
+    
+    var roundedScaledValue = 0;
+    if (decimalPart >= 0.5) {
+        roundedScaledValue = integerPart + 1;
+    } else {
+        roundedScaledValue = integerPart;
+    }
+    
+    return roundedScaledValue / multiplier;
+}

@@ -10,7 +10,10 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
     private Dictionary<string, FunctionDefinition> _functions = new();
     private ValueObj? returnValueFromFunction;
     private readonly HashSet<string> _activeDirectives = new();
-
+    private readonly HashSet<string> _usings = new();
+    private string _currentPackage = "main";
+    private Stack<FunctionDefinition> _callStack = new();
+    
     public override ValueObj? VisitVariableDeclaration(ExpressionsParser.VariableDeclarationContext context)
     {
         var variableName = context.IDENTIFIER().GetText();
@@ -139,7 +142,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
 
     private ValueObj PerformOperation(string operation, ValueObj valueObj)
     {
-        if (valueObj.DataType != EDataType.Integer && valueObj.DataType != EDataType.Double)
+        if (valueObj.DataType != EDataType.Int32 && valueObj.DataType != EDataType.Double)
         {
             throw new InvalidOperationException($"Operation '{operation}' is not supported for type '{valueObj.DataType}'.");
         }
@@ -221,7 +224,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         
         if (context.INTEGER() is not null)
         {
-            result.DataType = EDataType.Integer;
+            result.DataType = EDataType.Int32;
             result.Value = int.Parse(value);
         }
         else if (context.BOOL() is not null)
@@ -253,11 +256,24 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         return result;
     }
 
-    // TODO: refactor
-    public override ValueObj? VisitFunctionCall(ExpressionsParser.FunctionCallContext context)
+    #region Functions
+    
+    public override ValueObj? VisitSimpleFunctionCall(ExpressionsParser.SimpleFunctionCallContext context)
     {
         var functionName = context.IDENTIFIER().GetText();
+        
+        _ = _functions.TryGetValue(functionName, out var functionDefinition);
 
+        if (functionDefinition is not null)
+        {
+            //_currentPackage = functionDefinition.Package;
+            _callStack.Push(functionDefinition);
+        }
+        else
+        {
+            _callStack.Clear();
+        }
+        
         if (functionName == YailTokens.Print)
         {
             foreach (var exprContext in context.expression())
@@ -268,7 +284,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
                     Console.Write(valueObj.Value.Value);
                 }
             }
-            return null; 
+            return null;
         }
         if (functionName == YailTokens.PrintLn)
         {
@@ -280,58 +296,98 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
                     Console.WriteLine(valueObj.Value.Value);
                 }
             }
-            return null; 
+            return null;
         }
-
         if (functionName == YailTokens.Input)
         {
             var inputValue = Console.ReadLine();
-
             var result = new ValueObj
             {
                 DataType = EDataType.String,
                 Value = inputValue
             };
-
             return result;
         }
-        
         if (functionName == YailTokens.ParseInt)
         {
             if (context.expression().Length != 1)
             {
                 throw new InvalidOperationException("ParseInt requires exactly one argument.");
             }
-
             var argument = Visit(context.expression(0));
             return IoHelper.ParseInt((ValueObj)argument);
         }
-        
         if (functionName == YailTokens.ParseDouble)
         {
             if (context.expression().Length != 1)
             {
                 throw new InvalidOperationException("ParseDouble requires exactly one argument.");
             }
-
             var argument = Visit(context.expression(0));
             return IoHelper.ParseDouble((ValueObj)argument);
         }
-        
         if (functionName == YailTokens.ParseBool)
         {
             if (context.expression().Length != 1)
             {
                 throw new InvalidOperationException("ParseBool requires exactly one argument.");
             }
-
             var argument = Visit(context.expression(0));
             return IoHelper.ParseBool((ValueObj)argument);
+        }
+        if (functionName == YailTokens.ToString)
+        {
+            if (context.expression().Length != 1)
+            {
+                throw new InvalidOperationException("string function requires exactly one argument.");
+            }
+
+            var argument = Visit(context.expression(0));
+            if (argument == null)
+            {
+                throw new InvalidOperationException("string function requires a valid argument.");
+            }
+
+            return new ValueObj
+            {
+                DataType = EDataType.String,
+                Value = argument.Value.Value!.ToString()
+            };
+        }
+        if (functionName == YailTokens.Typeof)
+        {
+            if (context.expression().Length != 1)
+            {
+                throw new InvalidOperationException("Typeof function requires exactly one argument.");
+            }
+
+            var argument = Visit(context.expression(0));
+            if (argument == null)
+            {
+                throw new InvalidOperationException("Typeof function requires a valid argument.");
+            }
+
+            return new ValueObj
+            {
+                DataType = EDataType.String,
+                Value = argument.Value.DataType!.ToString()
+            };
         }
         
         if (_functions.TryGetValue(functionName, out var functionInfo))
         {
-            // Collect arguments for the function call
+            var isPrivate = functionInfo.AccessModifier == EAccessModifier.Private;
+
+            if (isPrivate)
+            {
+                var canCallPrivate = _callStack.Any(ancestor => ancestor.AccessModifier == EAccessModifier.Public) || _currentPackage == functionInfo.Package;
+
+                if (!canCallPrivate)
+                {
+                    throw new Exception($"Cannot call private function '{functionName}'.");
+                }
+            }
+            
             var arguments = new List<ValueObj?>();
             foreach (var exprContext in context.expression())
             {
@@ -381,27 +437,75 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
                     IsConst = true
                 };
             }
-            
+
             _variables = currentScope;
 
             var returnValue = returnValueFromFunction;
 
-            // dynamically set the function return type if any
+            // Dynamically set the function return type if any
             if (functionInfo.ReturnType == EDataType.Any)
             {
                 functionInfo.ReturnType = returnValue.Value.DataType;
             }
-            
+
             if (returnValue.Value.DataType != functionInfo.ReturnType)
             {
-                throw new Exception($"Return type does not match on function {functionName}.\nExpected: '{returnValue.Value.DataType}' was '{functionInfo.ReturnType}'."); // TODO: implement custom exceptions
+                throw new Exception($"Return type does not match on function {functionName}.\nExpected: '{returnValue.Value.DataType}' was '{functionInfo.ReturnType}'.");
             }
-            
+
             returnValueFromFunction = null;
             return returnValue;
         }
-        
+
         throw new InvalidOperationException($"Undefined function: {functionName}");
+    }
+
+    public override ValueObj? VisitNamespacedFunctionCall(ExpressionsParser.NamespacedFunctionCallContext context)
+    {
+        var packageName = context.IDENTIFIER()[0];
+        var functionName = context.IDENTIFIER()[1];
+        
+        return base.VisitNamespacedFunctionCall(context);
+    }
+
+    public override ValueObj? VisitFunctionDeclaration(ExpressionsParser.FunctionDeclarationContext context)
+    {
+        var functionName = context.IDENTIFIER().GetText();
+        var accessLevel = context.accessLevels();
+        var accessLevelName = string.Empty;
+        
+        if (accessLevel is not null)
+        {
+            accessLevelName = accessLevel.GetText();
+        }
+        
+        var returnType = context.DATA_TYPES().GetText();
+        
+        var parameters = new List<(string, string)>();
+        if (context.parameterList() != null)
+        {
+            foreach (var paramContext in context.parameterList().parameter())
+            {
+                var paramType = paramContext.DATA_TYPES().GetText();
+                var paramName = paramContext.IDENTIFIER().GetText();
+                parameters.Add((paramType, paramName));
+            }
+        }
+
+        var body = context.block();
+
+        var functionInfo = new FunctionDefinition(functionName, accessLevelName.ToAccessLevel(),returnType.ToDataType(), parameters, body, _currentPackage);
+        _functions[functionName] = functionInfo;
+
+        return null;
+    }
+
+    #endregion
+
+    public override ValueObj? VisitUsingDirective(ExpressionsParser.UsingDirectiveContext context)
+    {
+        _usings.Add(context.IDENTIFIER().GetText());
+        return base.VisitUsingDirective(context);
     }
 
     public override ValueObj? VisitCompareExpr(ExpressionsParser.CompareExprContext context)
@@ -470,6 +574,11 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
     {
         var conditionResult = Visit(conditionContext);
 
+        if (conditionResult is null)
+        {
+            return false;
+        }
+        
         if (conditionResult is null || conditionResult.Value.DataType != EDataType.Boolean)
         {
             throw new InvalidOperationException("Condition in must evaluate to a boolean value.");
@@ -493,36 +602,42 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         return null;
     }
 
-    public override ValueObj? VisitFunctionDeclaration(ExpressionsParser.FunctionDeclarationContext context)
-    {
-        var functionName = context.IDENTIFIER().GetText();
-        
-        var returnType = context.DATA_TYPES().GetText();
-        
-        var parameters = new List<(string, string)>();
-        if (context.parameterList() != null)
-        {
-            foreach (var paramContext in context.parameterList().parameter())
-            {
-                var paramType = paramContext.DATA_TYPES().GetText();
-                var paramName = paramContext.IDENTIFIER().GetText();
-                parameters.Add((paramType, paramName));
-            }
-        }
-
-        var body = context.block();
-
-        var functionInfo = new FunctionDefinition(functionName, returnType.ToDataType(), parameters, body);
-        _functions[functionName] = functionInfo;
-
-        return null;
-    }
-
     public override ValueObj? VisitDirective(ExpressionsParser.DirectiveContext context)
     {
         var directiveName = context.GetText().Replace("#use", "").Trim();
         _activeDirectives.Add(directiveName);
 
         return null;
+    }
+
+    public override ValueObj? VisitPackageDeclaration(ExpressionsParser.PackageDeclarationContext context)
+    {
+        _currentPackage = context.IDENTIFIER().GetText();
+        return base.VisitPackageDeclaration(context);
+    }
+
+    public override ValueObj? VisitBoolExpr(ExpressionsParser.BoolExprContext context)
+    {
+        var lhsValue = (ValueObj)Visit(context.expression(0));
+        var rhsValue = (ValueObj)Visit(context.expression(1));
+        
+        var operatorText = context.boolOp().GetText();
+        
+        var result = OperationsHelper.PerformOperation(lhsValue, rhsValue, operatorText);
+
+        return new ValueObj
+        {
+            IsConst = lhsValue.IsConst && rhsValue.IsConst,
+            Value = result,
+            DataType = DataTypeHelper.DetermineResultType(lhsValue, rhsValue)
+        };
+    }
+
+    public override ValueObj? VisitCastExpr(ExpressionsParser.CastExprContext context)
+    {
+        var value = Visit(context.expression());
+        var targetType = context.DATA_TYPES().GetText();
+
+        return value?.CastTo(targetType);
     }
 }

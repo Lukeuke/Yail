@@ -39,6 +39,18 @@ println(x + 6);
 // output: 11
 ```
 
+#### Casting
+```js
+funky test() double {
+    return 1.45;
+}
+
+var x = test();
+x += 1.0;
+
+println(typeof((string)x));
+```
+
 ### While-loops
 ```js
 var x = 5;
@@ -84,6 +96,38 @@ funky addNumbers(i32 a, i32 b) i32 {
 x = addNumbers(3, 5);
 
 println(x);
+```
+
+### Access modifiers
+
+```js
+package test
+
+funky test() string {
+  return "called from test()";
+}
+
+pub test2() string {
+  println("called test2()");
+  return test();
+}
+
+package main
+
+// Exception: Cannot call private function 'test'.
+println(test());
+// output: 
+// called test2()
+// called from test()
+println(test2());
+```
+
+### Libraries
+
+```js
+using math // library import
+
+println(abs(-5)); // function inside imported package
 ```
 
 ### Supports

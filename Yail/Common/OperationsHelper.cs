@@ -17,20 +17,20 @@ public static class OperationsHelper
             };
         }
 
-        if (left.DataType == EDataType.Integer && right.DataType == EDataType.Integer)
+        if (left.DataType == EDataType.Int32 && right.DataType == EDataType.Int32)
         {
-            // Integer addition
+            // Int32 addition
             return new ValueObj
             {
                 IsConst = false,
                 Value = (int)left.Value + (int)right.Value,
-                DataType = EDataType.Integer
+                DataType = EDataType.Int32
             };
         }
 
         if (left.DataType == EDataType.Double || right.DataType == EDataType.Double)
         {
-            // Double addition (convert Integer to Double if needed)
+            // Double addition (convert Int32 to Double if needed)
             var leftValue = left.DataType == EDataType.Double ? (double)left.Value : Convert.ToDouble(left.Value);
             var rightValue = right.DataType == EDataType.Double ? (double)right.Value : Convert.ToDouble(right.Value);
 
@@ -63,20 +63,20 @@ public static class OperationsHelper
     
     public static ValueObj Subtract(ValueObj left, ValueObj right)
     {
-        if (left.DataType == EDataType.Integer && right.DataType == EDataType.Integer)
+        if (left.DataType == EDataType.Int32 && right.DataType == EDataType.Int32)
         {
-            // Integer subtraction
+            // Int32 subtraction
             return new ValueObj
             {
                 IsConst = false,
                 Value = (int)left.Value - (int)right.Value,
-                DataType = EDataType.Integer
+                DataType = EDataType.Int32
             };
         }
 
         if (left.DataType == EDataType.Double || right.DataType == EDataType.Double)
         {
-            // Double subtraction (convert Integer to Double if needed)
+            // Double subtraction (convert Int32 to Double if needed)
             var leftValue = left.DataType == EDataType.Double ? (double)left.Value : Convert.ToDouble(left.Value);
             var rightValue = right.DataType == EDataType.Double ? (double)right.Value : Convert.ToDouble(right.Value);
 
@@ -112,13 +112,13 @@ public static class OperationsHelper
         if (left.Value == null || right.Value == null)
             throw new InvalidOperationException("Cannot multiply null values.");
 
-        if (left.DataType == EDataType.Integer && right.DataType == EDataType.Integer)
+        if (left.DataType == EDataType.Int32 && right.DataType == EDataType.Int32)
         {
             return new ValueObj
             {
                 IsConst = false,
                 Value = (int)left.Value * (int)right.Value,
-                DataType = EDataType.Integer
+                DataType = EDataType.Int32
             };
         }
 
@@ -143,20 +143,21 @@ public static class OperationsHelper
         if (left.Value == null || right.Value == null)
             throw new InvalidOperationException("Cannot divide null values.");
 
-        if (right.DataType == EDataType.Integer && (int)right.Value == 0 || 
+        if (right.DataType == EDataType.Int32 && (int)right.Value == 0 || 
             right.DataType == EDataType.Double && (double)right.Value == 0.0)
         {
             throw new DivideByZeroException("Cannot divide by zero.");
         }
 
-        if (left.DataType == EDataType.Integer && right.DataType == EDataType.Integer)
+        if (left.DataType == EDataType.Int32 && right.DataType == EDataType.Int32)
         {
-            return new ValueObj
+            var a =  new ValueObj
             {
                 IsConst = false,
-                Value = (int)left.Value / (int)right.Value,
-                DataType = EDataType.Integer
+                Value = (int)left.Value / (double)(int)right.Value, 
+                DataType = EDataType.Double
             };
+            return a;
         }
 
         if (left.DataType == EDataType.Double || right.DataType == EDataType.Double)
@@ -180,18 +181,18 @@ public static class OperationsHelper
         if (left.Value == null || right.Value == null)
             throw new InvalidOperationException("Cannot perform modulo on null values.");
 
-        if (right.DataType == EDataType.Integer && (int)right.Value == 0)
+        if (right.DataType == EDataType.Int32 && (int)right.Value == 0)
         {
             throw new DivideByZeroException("Cannot modulo by zero.");
         }
 
-        if (left.DataType == EDataType.Integer && right.DataType == EDataType.Integer)
+        if (left.DataType == EDataType.Int32 && right.DataType == EDataType.Int32)
         {
             return new ValueObj
             {
                 IsConst = false,
                 Value = (int)left.Value % (int)right.Value,
-                DataType = EDataType.Integer
+                DataType = EDataType.Int32
             };
         }
 
@@ -200,7 +201,7 @@ public static class OperationsHelper
     
     public static int Compare(ValueObj left, ValueObj right)
     {
-        if (left.DataType == EDataType.Integer && right.DataType == EDataType.Integer)
+        if (left.DataType == EDataType.Int32 && right.DataType == EDataType.Int32)
         {
             return ((int)left.Value).CompareTo((int)right.Value);
         }
@@ -218,12 +219,12 @@ public static class OperationsHelper
 
     public static ValueObj Power(ValueObj left, ValueObj right)
     {
-        if (left.DataType != EDataType.Integer && left.DataType != EDataType.Double)
+        if (left.DataType != EDataType.Int32 && left.DataType != EDataType.Double)
         {
             throw new InvalidOperationException("Power operation is only supported for integers and doubles.");
         }
 
-        if (right.DataType != EDataType.Integer && right.DataType != EDataType.Double)
+        if (right.DataType != EDataType.Int32 && right.DataType != EDataType.Double)
         {
             throw new InvalidOperationException("Exponent must be an integer or a double.");
         }
@@ -235,10 +236,10 @@ public static class OperationsHelper
 
         return new ValueObj
         {
-            DataType = left.DataType == EDataType.Integer && right.DataType == EDataType.Integer
-                ? EDataType.Integer
+            DataType = left.DataType == EDataType.Int32 && right.DataType == EDataType.Int32
+                ? EDataType.Int32
                 : EDataType.Double,
-            Value = left.DataType == EDataType.Integer && right.DataType == EDataType.Integer
+            Value = left.DataType == EDataType.Int32 && right.DataType == EDataType.Int32
                 ? (object)(int)result
                 : result
         };
@@ -246,12 +247,12 @@ public static class OperationsHelper
 
     public static ValueObj FloorDivide(ValueObj left, ValueObj right)
     {
-        if (left.DataType != EDataType.Integer && left.DataType != EDataType.Double)
+        if (left.DataType != EDataType.Int32 && left.DataType != EDataType.Double)
         {
             throw new InvalidOperationException("Floor division is only supported for integers and doubles.");
         }
 
-        if (right.DataType != EDataType.Integer && right.DataType != EDataType.Double)
+        if (right.DataType != EDataType.Int32 && right.DataType != EDataType.Double)
         {
             throw new InvalidOperationException("Divisor must be an integer or a double.");
         }
@@ -268,12 +269,35 @@ public static class OperationsHelper
 
         return new ValueObj
         {
-            DataType = left.DataType == EDataType.Integer && right.DataType == EDataType.Integer
-                ? EDataType.Integer
+            DataType = left.DataType == EDataType.Int32 && right.DataType == EDataType.Int32
+                ? EDataType.Int32
                 : EDataType.Double,
-            Value = left.DataType == EDataType.Integer && right.DataType == EDataType.Integer
+            Value = left.DataType == EDataType.Int32 && right.DataType == EDataType.Int32
                 ? (object)(int)result
                 : result
+        };
+    }
+    
+    public static object PerformOperation(ValueObj lhs, ValueObj rhs, string operatorText)
+    {
+        var lhsValue = lhs.Value!;
+        var rhsValue = rhs.Value!;
+
+        return (lhs.DataType, rhs.DataType, operatorText) switch
+        {
+            (EDataType.Int32, EDataType.Int32, "xor") => (int)lhsValue ^ (int)rhsValue,
+
+            (EDataType.Int32, EDataType.Int32, "and") => ((int)lhsValue != 0 && (int)rhsValue != 0) ? rhsValue : 0,
+
+            (EDataType.Int32, EDataType.Int32, "or") => ((int)lhsValue != 0 || (int)rhsValue != 0) ? rhsValue : 0,
+
+            (EDataType.Boolean, EDataType.Boolean, "and") => (bool)lhsValue && (bool)rhsValue,
+
+            (EDataType.Boolean, EDataType.Boolean, "or") => (bool)lhsValue || (bool)rhsValue,
+
+            (EDataType.Boolean, EDataType.Boolean, "xor") => (bool)lhsValue ^ (bool)rhsValue,
+
+            _ => throw new InvalidOperationException($"Unsupported operation for types {lhs.DataType} and {rhs.DataType}")
         };
     }
 }
