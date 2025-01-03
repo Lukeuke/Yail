@@ -1,16 +1,25 @@
 ﻿using Antlr4.Runtime;
 using Yail;
+using Yail.Common;
 using Yail.Grammar;
 
+#if DEBUG
 var input = File.ReadAllText("""C:\Users\Luuqe\RiderProjects\yail\Yail\Samples\test.yail""");
+Console.WriteLine("[Debug mode]");
+#else
+var input = string.Empty;
+if (args.Length < 1)
+{
+    ExceptionHelper.PrintError("Provide source file path.");
+}
+#endif
 
 if (args.Length > 0)
 {
     var filePath = args[0];
-    if (!filePath.EndsWith(".y") || !filePath.EndsWith(".yail"))
+    if (!(filePath.EndsWith(".y") || filePath.EndsWith(".yail")))
     {
-        Console.Error.WriteLine("Yail source files must end with '.y' or '.yail'.");
-        Environment.Exit(0);
+        ExceptionHelper.PrintError("Yail source files must end with '.y' or '.yail'.");
     }
     
     input = File.ReadAllText(filePath);

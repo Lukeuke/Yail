@@ -10,6 +10,13 @@ public static class ExceptionHelper
         {
             throw new ArgumentNullException("Value was null.");
         }
+    }
 
+    public static void PrintError(string message)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.Error.WriteLine(message);
+        Console.ResetColor();
+        Environment.Exit(0);
     }
 }
