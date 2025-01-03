@@ -41,7 +41,9 @@ foreach (var file in files)
     }
 }
 
-input = input.RemovePackageAndUsingStatements();
+input = input
+    .RemoveComments()
+    .RemoveUsingStatements();
 
 var inputStream = new AntlrInputStream(input);
 

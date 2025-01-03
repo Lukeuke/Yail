@@ -135,5 +135,8 @@ println(abs(-5)); // function inside imported package
 ### Supports
 
 - [x] Int, bool, char, string, double, null
-- [x] '+' and '-' operators
+- [x] Single-line, multi-line comments
+- [x] Arrhythmic operators
 - [x] Console outputs ``print()`` / ``println()`` 
+- [x] Console input ``input()``
+- [x] Parsing ex.: ``parseInt()``

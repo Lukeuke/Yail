@@ -9,4 +9,14 @@ funky test() double {
 var x = test();
 x += 1.0;
 
-println(typeof((string)x));
+funky fib(i32 val) i32 {
+    if val < 3 {
+        return 1;
+    }
+    
+    return fib(val - 2) + fib(val - 1);
+} 
+
+// println(typeof((string)x));
+
+println(fib(10));
