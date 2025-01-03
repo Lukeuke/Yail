@@ -1,6 +1,8 @@
-﻿package main
+﻿using math
 
-var x = parseInt(input());
+package main
+
+var x = -1;
 
 if x is 10 {
   println(":D");

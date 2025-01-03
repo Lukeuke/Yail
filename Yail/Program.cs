@@ -58,6 +58,10 @@ if (args.Length > 0 && args[1] == "enable-errors")
     parser.AddErrorListener(new YailErrorListener());
 }
 
+#if DEBUG
+parser.AddErrorListener(new YailErrorListener());
+#endif
+
 var tree = parser.program();
 
 #if DEBUG

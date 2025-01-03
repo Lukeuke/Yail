@@ -2,8 +2,8 @@
 
 // defines
 WHILE: 'while';
-INTEGER: [0-9]+;
-DOUBLE: [0-9]+ '.' [0-9]+;
+INTEGER: '-'? [0-9]+;
+DOUBLE: '-'? [0-9]+ '.' [0-9]+;
 STRING: '"' (~["\r\n])* '"';
 BOOL: 'true' | 'false';
 CHAR: '\'' . '\'';
@@ -67,4 +67,4 @@ statement: (variableDeclaration | assignment | operationAssignment | selfOperati
 ifBlock: 'if' expression block ('else' elseIfBlock)?;
 elseIfBlock: block | ifBlock;
 
-whileBlock: WHILE expression block ('else' elseIfBlock);
+whileBlock: WHILE expression block;
