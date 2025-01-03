@@ -151,12 +151,13 @@ public static class OperationsHelper
 
         if (left.DataType == EDataType.Int32 && right.DataType == EDataType.Int32)
         {
-            return new ValueObj
+            var a =  new ValueObj
             {
                 IsConst = false,
-                Value = (int)left.Value / (int)right.Value,
-                DataType = EDataType.Int32
+                Value = (int)left.Value / (double)(int)right.Value, 
+                DataType = EDataType.Double
             };
+            return a;
         }
 
         if (left.DataType == EDataType.Double || right.DataType == EDataType.Double)
@@ -274,6 +275,29 @@ public static class OperationsHelper
             Value = left.DataType == EDataType.Int32 && right.DataType == EDataType.Int32
                 ? (object)(int)result
                 : result
+        };
+    }
+    
+    public static object PerformOperation(ValueObj lhs, ValueObj rhs, string operatorText)
+    {
+        var lhsValue = lhs.Value!;
+        var rhsValue = rhs.Value!;
+
+        return (lhs.DataType, rhs.DataType, operatorText) switch
+        {
+            (EDataType.Int32, EDataType.Int32, "xor") => (int)lhsValue ^ (int)rhsValue,
+
+            (EDataType.Int32, EDataType.Int32, "and") => ((int)lhsValue != 0 && (int)rhsValue != 0) ? rhsValue : 0,
+
+            (EDataType.Int32, EDataType.Int32, "or") => ((int)lhsValue != 0 || (int)rhsValue != 0) ? rhsValue : 0,
+
+            (EDataType.Boolean, EDataType.Boolean, "and") => (bool)lhsValue && (bool)rhsValue,
+
+            (EDataType.Boolean, EDataType.Boolean, "or") => (bool)lhsValue || (bool)rhsValue,
+
+            (EDataType.Boolean, EDataType.Boolean, "xor") => (bool)lhsValue ^ (bool)rhsValue,
+
+            _ => throw new InvalidOperationException($"Unsupported operation for types {lhs.DataType} and {rhs.DataType}")
         };
     }
 }

@@ -42,4 +42,14 @@ public static class DataTypeHelper
 
         return result;
     }
+    
+    public static EDataType DetermineResultType(ValueObj lhs, ValueObj rhs)
+    {
+        if (lhs.DataType == EDataType.Int32 || rhs.DataType == EDataType.Int32)
+            return EDataType.Int32;
+        if (lhs.DataType == EDataType.Boolean && rhs.DataType == EDataType.Boolean)
+            return EDataType.Boolean;
+
+        throw new InvalidOperationException("Unsupported types for operation.");
+    }
 }

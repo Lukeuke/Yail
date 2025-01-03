@@ -1,14 +1,5 @@
-﻿package test
-
-funky test() string {
-    return "called from test()";
-}
-
-pub test2() string {
-    println("called test2()");
-    return test();
-}
+﻿using math
 
 package main
 
-println(test2());
+println(round(2.31423423, 1));

@@ -18,3 +18,33 @@ pub funky pow(i32 value, i32 base) i32 {
     
     return result;
 }
+
+pub funky floor(double value) i32 {
+    var x = to_string(value);
+    return parseInt(x);
+}
+
+pub funky round(double value, i32 floatingPoint) double {
+    var multiplier = 1;
+    
+    var i = 0;
+    while i < floatingPoint {
+        multiplier = multiplier * 10;
+        i++;
+    }
+
+    var scaledValue = value * multiplier;
+    
+    var integerPart = floor(scaledValue);
+    
+    var decimalPart = scaledValue - integerPart;
+    
+    var roundedScaledValue = 0;
+    if (decimalPart >= 0.5) {
+        roundedScaledValue = integerPart + 1;
+    } else {
+        roundedScaledValue = integerPart;
+    }
+    
+    return roundedScaledValue / multiplier;
+}

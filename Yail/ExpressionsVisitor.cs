@@ -335,6 +335,25 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             var argument = Visit(context.expression(0));
             return IoHelper.ParseBool((ValueObj)argument);
         }
+        if (functionName == YailTokens.ToString)
+        {
+            if (context.expression().Length != 1)
+            {
+                throw new InvalidOperationException("string function requires exactly one argument.");
+            }
+
+            var argument = Visit(context.expression(0));
+            if (argument == null)
+            {
+                throw new InvalidOperationException("string function requires a valid argument.");
+            }
+
+            return new ValueObj
+            {
+                DataType = EDataType.String,
+                Value = argument.Value.Value!.ToString()
+            };
+        }
         
         if (_functions.TryGetValue(functionName, out var functionInfo))
         {
@@ -536,6 +555,11 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
     {
         var conditionResult = Visit(conditionContext);
 
+        if (conditionResult is null)
+        {
+            return false;
+        }
+        
         if (conditionResult is null || conditionResult.Value.DataType != EDataType.Boolean)
         {
             throw new InvalidOperationException("Condition in must evaluate to a boolean value.");
@@ -571,5 +595,34 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
     {
         _currentPackage = context.IDENTIFIER().GetText();
         return base.VisitPackageDeclaration(context);
+    }
+
+    public override ValueObj? VisitBoolExpr(ExpressionsParser.BoolExprContext context)
+    {
+        var lhsValue = (ValueObj)Visit(context.expression(0));
+        var rhsValue = (ValueObj)Visit(context.expression(1));
+        
+        var operatorText = context.boolOp().GetText();
+        
+        var result = OperationsHelper.PerformOperation(lhsValue, rhsValue, operatorText);
+
+        return new ValueObj
+        {
+            IsConst = lhsValue.IsConst && rhsValue.IsConst,
+            Value = result,
+            DataType = DataTypeHelper.DetermineResultType(lhsValue, rhsValue)
+        };
+    }
+
+    public override ValueObj? VisitTypeof(ExpressionsParser.TypeofContext context)
+    {
+        var value = (ValueObj)Visit(context.expression());
+
+        return new ValueObj
+        {
+            IsConst = true,
+            Value = value.DataType.ToString(),
+            DataType = EDataType.String
+        };
     }
 }
