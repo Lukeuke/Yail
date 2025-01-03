@@ -16,7 +16,9 @@ println(y);
 - i32 -> Integer
 - any -> dynamically sets the proper return type
 
-## I/O
+> To disable type checking use ``#use disable-type-checking`` on top of the file.
+
+### I/O
 
 ```js
 var x = "";
@@ -27,7 +29,7 @@ x = input();
 println(x);
 ```
 
-### Parsing
+#### Parsing
 ```js
 var x = "5";
 

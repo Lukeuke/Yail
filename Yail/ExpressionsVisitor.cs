@@ -9,6 +9,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
     private Dictionary<string, ValueObj?> _variables = new();
     private Dictionary<string, FunctionDefinition> _functions = new();
     private ValueObj? returnValueFromFunction;
+    private readonly HashSet<string> _activeDirectives = new();
 
     public override ValueObj? VisitVariableDeclaration(ExpressionsParser.VariableDeclarationContext context)
     {
@@ -38,13 +39,26 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             return null;
         }
         
-        if (!_variables.TryGetValue(variableName, out _))
+        if (!_variables.TryGetValue(variableName, out var prevVal))
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.Error.WriteLine($"Variable '${variableName}' is not defined.");
             Environment.Exit(1);
         }
 
+        if (_activeDirectives.Contains(YailTokens.DisableTypeChecks))
+        {
+            _variables[variableName] = value;
+            return null;
+        }
+        
+        if (prevVal!.Value.DataType != value.Value.DataType)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Error.WriteLine($"Variable '${variableName}' type does not match.");
+            Environment.Exit(1);
+        }
+        
         _variables[variableName] = value;
         
         return null;
@@ -410,6 +424,14 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
 
         var functionInfo = new FunctionDefinition(functionName, returnType.ToDataType(), parameters, body);
         _functions[functionName] = functionInfo;
+
+        return null;
+    }
+
+    public override ValueObj? VisitDirective(ExpressionsParser.DirectiveContext context)
+    {
+        var directiveName = context.GetText().Replace("#use", "").Trim();
+        _activeDirectives.Add(directiveName);
 
         return null;
     }

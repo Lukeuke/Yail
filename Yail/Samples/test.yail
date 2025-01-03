@@ -1,4 +1,6 @@
-﻿var x = "";
+﻿#use disable-type-checking
+
+var x = "";
 
 println("type something:");
 x = parseInt(input());

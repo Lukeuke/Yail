@@ -8,4 +8,5 @@ public static class YailTokens
     public static string ParseInt => "parseInt";
     public static string ParseDouble => "parseDouble";
     public static string ParseBool => "parseBool";
+    public static string DisableTypeChecks => "disable-type-checking";
 }

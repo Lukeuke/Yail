@@ -11,11 +11,13 @@ NULL: 'null';
 WS: [ \t\r\n]+ -> skip;
 DATA_TYPES: 'i16' | 'i32' | 'i64' | 'string' | 'bool' | 'char' | 'double' | 'any' | 'void';
 IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;
+USE_IDENTIFIERS: 'disable-type-checking';
 
 // grammar
 program: line* EOF;
-line: statement | ifBlock | whileBlock | functionDeclaration | return;
+line: directive | statement | ifBlock | whileBlock | functionDeclaration | return;
 block: '{' line* '}';
+directive: '#' 'use' IDENTIFIER ('-' IDENTIFIER)*;
 
 multiplyOp: '*' | '/' | '%';
 addOp: '+' | '-';
