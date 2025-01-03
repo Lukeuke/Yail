@@ -10,6 +10,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
     private Dictionary<string, FunctionDefinition> _functions = new();
     private ValueObj? returnValueFromFunction;
     private readonly HashSet<string> _activeDirectives = new();
+    private readonly HashSet<string> _usings = new();
 
     public override ValueObj? VisitVariableDeclaration(ExpressionsParser.VariableDeclarationContext context)
     {
@@ -253,8 +254,9 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         return result;
     }
 
-    // TODO: refactor
-    public override ValueObj? VisitFunctionCall(ExpressionsParser.FunctionCallContext context)
+    #region Functions
+    
+    public override ValueObj? VisitSimpleFunctionCall(ExpressionsParser.SimpleFunctionCallContext context)
     {
         var functionName = context.IDENTIFIER().GetText();
 
@@ -282,7 +284,6 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             }
             return null; 
         }
-
         if (functionName == YailTokens.Input)
         {
             var inputValue = Console.ReadLine();
@@ -295,7 +296,6 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
 
             return result;
         }
-        
         if (functionName == YailTokens.ParseInt)
         {
             if (context.expression().Length != 1)
@@ -306,7 +306,6 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             var argument = Visit(context.expression(0));
             return IoHelper.ParseInt((ValueObj)argument);
         }
-        
         if (functionName == YailTokens.ParseDouble)
         {
             if (context.expression().Length != 1)
@@ -317,7 +316,6 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             var argument = Visit(context.expression(0));
             return IoHelper.ParseDouble((ValueObj)argument);
         }
-        
         if (functionName == YailTokens.ParseBool)
         {
             if (context.expression().Length != 1)
@@ -402,6 +400,48 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         }
         
         throw new InvalidOperationException($"Undefined function: {functionName}");
+    }
+
+    // TODO: complete this
+    public override ValueObj? VisitNamespacedFunctionCall(ExpressionsParser.NamespacedFunctionCallContext context)
+    {
+        var packageName = context.IDENTIFIER()[0];
+        var functionName = context.IDENTIFIER()[1];
+        
+        return base.VisitNamespacedFunctionCall(context);
+    }
+
+    public override ValueObj? VisitFunctionDeclaration(ExpressionsParser.FunctionDeclarationContext context)
+    {
+        var functionName = context.IDENTIFIER().GetText();
+        
+        var returnType = context.DATA_TYPES().GetText();
+        
+        var parameters = new List<(string, string)>();
+        if (context.parameterList() != null)
+        {
+            foreach (var paramContext in context.parameterList().parameter())
+            {
+                var paramType = paramContext.DATA_TYPES().GetText();
+                var paramName = paramContext.IDENTIFIER().GetText();
+                parameters.Add((paramType, paramName));
+            }
+        }
+
+        var body = context.block();
+
+        var functionInfo = new FunctionDefinition(functionName, returnType.ToDataType(), parameters, body);
+        _functions[functionName] = functionInfo;
+
+        return null;
+    }
+    
+    #endregion
+
+    public override ValueObj? VisitUsingDirective(ExpressionsParser.UsingDirectiveContext context)
+    {
+        _usings.Add(context.IDENTIFIER().GetText());
+        return base.VisitUsingDirective(context);
     }
 
     public override ValueObj? VisitCompareExpr(ExpressionsParser.CompareExprContext context)
@@ -490,31 +530,6 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
     public override ValueObj? VisitBreak(ExpressionsParser.BreakContext context)
     {
         _shouldBreak = true;
-        return null;
-    }
-
-    public override ValueObj? VisitFunctionDeclaration(ExpressionsParser.FunctionDeclarationContext context)
-    {
-        var functionName = context.IDENTIFIER().GetText();
-        
-        var returnType = context.DATA_TYPES().GetText();
-        
-        var parameters = new List<(string, string)>();
-        if (context.parameterList() != null)
-        {
-            foreach (var paramContext in context.parameterList().parameter())
-            {
-                var paramType = paramContext.DATA_TYPES().GetText();
-                var paramName = paramContext.IDENTIFIER().GetText();
-                parameters.Add((paramType, paramName));
-            }
-        }
-
-        var body = context.block();
-
-        var functionInfo = new FunctionDefinition(functionName, returnType.ToDataType(), parameters, body);
-        _functions[functionName] = functionInfo;
-
         return null;
     }
 

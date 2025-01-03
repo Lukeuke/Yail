@@ -1,0 +1,20 @@
+﻿package math
+
+funky abs(i32 value) i32 {
+    if value < 0 {
+        return value * -1;
+    }
+    
+    return value;
+}
+
+funky pow(i32 value, i32 base) i32 {
+    var result = 1;
+    
+    while base > 0 {
+        result *= value;
+        base -= 1;
+    }
+    
+    return result;
+}

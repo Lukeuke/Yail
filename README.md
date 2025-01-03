@@ -86,6 +86,14 @@ x = addNumbers(3, 5);
 println(x);
 ```
 
+### Libraries
+
+```js
+using math // library import
+
+println(abs(-5)); // function inside imported package
+```
+
 ### Supports
 
 - [x] Int, bool, char, string, double, null

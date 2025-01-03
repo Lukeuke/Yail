@@ -15,7 +15,7 @@ USE_IDENTIFIERS: 'disable-type-checking';
 
 // grammar
 program: line* EOF;
-line: directive | statement | ifBlock | whileBlock | functionDeclaration | return;
+line: packageDeclaration | usingDirective | directive | statement | ifBlock | whileBlock | functionDeclaration | return;
 block: '{' line* '}';
 directive: '#' 'use' IDENTIFIER ('-' IDENTIFIER)*;
 
@@ -40,6 +40,9 @@ expression
     | expression boolOp expression           #boolExpr // TODO:
     ;
 
+packageDeclaration: 'package' IDENTIFIER;
+usingDirective: 'using' IDENTIFIER;
+
 variableDeclaration: 'var' IDENTIFIER '=' expression;
 functionDeclaration: 'funky' IDENTIFIER '(' (parameterList)? ')' DATA_TYPES block;
 
@@ -52,7 +55,10 @@ assignment: IDENTIFIER '=' expression;
 operationAssignment: IDENTIFIER (addOp|multiplyOp) '=' expression;
 selfOperation: ('++'|'--'|'**'|'//')? IDENTIFIER ('++'|'--'|'**'|'//')?;
 
-functionCall: IDENTIFIER '(' (expression (',' expression)*)? ')';
+functionCall
+    : IDENTIFIER '(' (expression (',' expression)*)? ')'                    # simpleFunctionCall
+    | IDENTIFIER '::' IDENTIFIER '(' (expression (',' expression)*)? ')'    # namespacedFunctionCall
+    ;
 
 statement: (variableDeclaration | assignment | operationAssignment | selfOperation | functionCall | break | return) ';';
 

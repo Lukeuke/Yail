@@ -17,13 +17,30 @@ if (args.Length < 1)
 if (args.Length > 0)
 {
     var filePath = args[0];
-    if (!(filePath.EndsWith(".y") || filePath.EndsWith(".yail")))
+    if (!filePath.CheckExt())
     {
         ExceptionHelper.PrintError("Yail source files must end with '.y' or '.yail'.");
     }
     
     input = File.ReadAllText(filePath);
 }
+
+var packages = input.ExtractUsings();
+
+var folderPath = Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE") ?? string.Empty, ".yail");
+var files = FileExtensionHelper.GetFilesWithExtensions(folderPath, new[] { ".y", ".yail" });
+
+foreach (var file in files)
+{
+    var fileName = Path.GetFileName(file).Split(".").First();
+    if (packages.Contains(fileName))
+    {
+        var source = File.ReadAllText(file);
+        input = string.Join(string.Empty, source, input);
+    }
+}
+
+input = input.RemovePackageAndUsingStatements();
 
 var inputStream = new AntlrInputStream(input);
 
