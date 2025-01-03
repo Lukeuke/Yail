@@ -21,7 +21,7 @@ directive: '#' 'use' IDENTIFIER ('-' IDENTIFIER)*;
 
 multiplyOp: '*' | '/' | '%';
 addOp: '+' | '-';
-compareOp: '==' | '!=' | '>' | '<' | '>=' | '<=';
+compareOp: '==' | 'is' | '!=' | 'is not' | '>' | '<' | '>=' | '<=';
 boolOp: 'and' | 'or' | 'xor';
 accessLevels: 'pub';
 

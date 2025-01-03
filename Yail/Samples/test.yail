@@ -1,22 +1,11 @@
-﻿using math
+﻿package main
 
-package main
+var x = parseInt(input());
 
-funky test() double {
-    return 1.45;
+if x is 10 {
+  println(":D");
 }
 
-var x = test();
-x += 1.0;
-
-funky fib(i32 val) i32 {
-    if val < 3 {
-        return 1;
-    }
-    
-    return fib(val - 2) + fib(val - 1);
-} 
-
-// println(typeof((string)x));
-
-println(fib(10));
+if x is not 10 {
+  println(":(");
+}

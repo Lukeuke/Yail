@@ -519,7 +519,9 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         var newValue = context.compareOp().GetText() switch
         {
             "==" => Equals((ValueObj)left, (ValueObj)right),
+            "is" => Equals((ValueObj)left, (ValueObj)right),
             "!=" => !Equals((ValueObj)left, (ValueObj)right),
+            "is not" => !Equals((ValueObj)left, (ValueObj)right),
             ">" => OperationsHelper.Compare((ValueObj)left, (ValueObj)right) > 0,
             "<" => OperationsHelper.Compare((ValueObj)left, (ValueObj)right) < 0,
             ">=" => OperationsHelper.Compare((ValueObj)left, (ValueObj)right) >= 0,

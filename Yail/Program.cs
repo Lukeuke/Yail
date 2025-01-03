@@ -6,7 +6,9 @@ using Yail.Grammar;
 
 #if DEBUG
 var input = File.ReadAllText("""C:\Users\Luuqe\RiderProjects\yail\Yail\Samples\test.yail""");
+Console.ForegroundColor = ConsoleColor.Yellow;
 Console.WriteLine("[Debug mode]");
+Console.ResetColor();
 #else
 var input = string.Empty;
 if (args.Length < 1)
