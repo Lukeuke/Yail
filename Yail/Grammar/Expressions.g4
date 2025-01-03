@@ -39,6 +39,7 @@ expression
     | expression addOp expression            #addExpr
     | expression compareOp expression        #compareExpr
     | expression boolOp expression           #boolExpr
+    | '(' DATA_TYPES ')' expression          #castExpr
     ;
 
 packageDeclaration: 'package' IDENTIFIER;
@@ -67,5 +68,3 @@ ifBlock: 'if' expression block ('else' elseIfBlock);
 elseIfBlock: block | ifBlock;
 
 whileBlock: WHILE expression block ('else' elseIfBlock);
-
-typeof: 'typeof' '(' expression ')';

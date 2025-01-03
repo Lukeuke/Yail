@@ -52,4 +52,56 @@ public static class DataTypeHelper
 
         throw new InvalidOperationException("Unsupported types for operation.");
     }
+
+    public static ValueObj? CastTo(this ValueObj value, string targetType)
+    {
+        var val = value.Value;
+        
+        switch (targetType)
+        {
+            case "i16":
+                return null;
+            
+            case "i32":
+                if (val is int intValue32)
+                    return new ValueObj { IsConst = true, Value = intValue32, DataType = EDataType.Int32 };
+                if (val is double doubleValue32)
+                    return new ValueObj { IsConst = true, Value = (int)doubleValue32, DataType = EDataType.Int32 };
+                return null;
+
+            case "i64":
+                return null;
+
+            case "double":
+                if (val is int intValDouble)
+                    return new ValueObj { IsConst = true, Value = (double)intValDouble, DataType = EDataType.Double };
+                if (val is double doubleVal)
+                    return new ValueObj { IsConst = true, Value = doubleVal, DataType = EDataType.Double };
+                return null;
+
+            case "string":
+                if (val is string strVal)
+                    return new ValueObj { IsConst = true, Value = strVal, DataType = EDataType.String };
+                return new ValueObj { IsConst = true, Value = val!.ToString(), DataType = EDataType.String };
+
+            case "bool":
+                if (val is bool boolVal)
+                    return new ValueObj { IsConst = true, Value = boolVal, DataType = EDataType.Boolean };
+                return null;
+
+            case "char":
+                if (val is string strValChar && strValChar.Length == 1)
+                    return new ValueObj { IsConst = true, Value = strValChar[0], DataType = EDataType.Char };
+                return null;
+
+            case "any":
+                return value;
+
+            case "void":
+                return null;
+
+            default:
+                return null;
+        }
+    }
 }

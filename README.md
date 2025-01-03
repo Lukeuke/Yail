@@ -39,6 +39,18 @@ println(x + 6);
 // output: 11
 ```
 
+#### Casting
+```js
+funky test() double {
+    return 1.45;
+}
+
+var x = test();
+x += 1.0;
+
+println(typeof((string)x));
+```
+
 ### While-loops
 ```js
 var x = 5;

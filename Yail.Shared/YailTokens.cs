@@ -9,6 +9,7 @@ public static class YailTokens
     public static string ParseDouble => "parseDouble";
     public static string ParseBool => "parseBool";
     public static string ToString => "to_string";
+    public static string Typeof => "typeof";
     public static string And => "and";
     public static string Or => "or";
     public static string Xor => "xor";

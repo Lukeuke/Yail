@@ -2,4 +2,11 @@
 
 package main
 
-println(round(2.31423423, 1));
+funky test() double {
+    return 1.45;
+}
+
+var x = test();
+x += 1.0;
+
+println(typeof((string)x));

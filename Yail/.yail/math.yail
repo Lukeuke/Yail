@@ -20,8 +20,7 @@ pub funky pow(i32 value, i32 base) i32 {
 }
 
 pub funky floor(double value) i32 {
-    var x = to_string(value);
-    return parseInt(x);
+    return (i32)value;
 }
 
 pub funky round(double value, i32 floatingPoint) double {

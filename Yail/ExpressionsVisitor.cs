@@ -354,6 +354,25 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
                 Value = argument.Value.Value!.ToString()
             };
         }
+        if (functionName == YailTokens.Typeof)
+        {
+            if (context.expression().Length != 1)
+            {
+                throw new InvalidOperationException("Typeof function requires exactly one argument.");
+            }
+
+            var argument = Visit(context.expression(0));
+            if (argument == null)
+            {
+                throw new InvalidOperationException("Typeof function requires a valid argument.");
+            }
+
+            return new ValueObj
+            {
+                DataType = EDataType.String,
+                Value = argument.Value.DataType!.ToString()
+            };
+        }
         
         if (_functions.TryGetValue(functionName, out var functionInfo))
         {
@@ -614,15 +633,11 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         };
     }
 
-    public override ValueObj? VisitTypeof(ExpressionsParser.TypeofContext context)
+    public override ValueObj? VisitCastExpr(ExpressionsParser.CastExprContext context)
     {
-        var value = (ValueObj)Visit(context.expression());
+        var value = Visit(context.expression());
+        var targetType = context.DATA_TYPES().GetText();
 
-        return new ValueObj
-        {
-            IsConst = true,
-            Value = value.DataType.ToString(),
-            DataType = EDataType.String
-        };
+        return value?.CastTo(targetType);
     }
 }
