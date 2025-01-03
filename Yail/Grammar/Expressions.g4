@@ -23,6 +23,7 @@ multiplyOp: '*' | '/' | '%';
 addOp: '+' | '-';
 compareOp: '==' | '!=' | '>' | '<' | '>=' | '<=';
 boolOp: 'and' | 'or' | 'xor'; // TODO:
+accessLevels: 'pub';
 
 break: 'break';
 continue: 'continue'; // TODO:
@@ -44,7 +45,7 @@ packageDeclaration: 'package' IDENTIFIER;
 usingDirective: 'using' IDENTIFIER;
 
 variableDeclaration: 'var' IDENTIFIER '=' expression;
-functionDeclaration: 'funky' IDENTIFIER '(' (parameterList)? ')' DATA_TYPES block;
+functionDeclaration: (accessLevels)? 'funky' IDENTIFIER '(' (parameterList)? ')' DATA_TYPES block;
 
 parameterList: parameter (',' parameter)*;
 parameter: DATA_TYPES IDENTIFIER;

@@ -8,7 +8,7 @@ public static class DataTypeHelper
     {
         var dict = new Dictionary<string, EDataType>
         {
-            { "i32", EDataType.Integer },
+            { "i32", EDataType.Int32 },
             { "double", EDataType.Double },
             { "string", EDataType.String },
             { "bool", EDataType.Boolean },
@@ -21,6 +21,23 @@ public static class DataTypeHelper
         if (!dict.TryGetValue(val, out var result))
         {
             throw new NotImplementedException("Data type not supported.");
+        }
+
+        return result;
+    }
+    
+    public static EAccessModifier ToAccessLevel(this string val)
+    {
+        var dict = new Dictionary<string, EAccessModifier>
+        {
+            { string.Empty, EAccessModifier.Private },
+            { "pv", EAccessModifier.Private },
+            { "pub", EAccessModifier.Public }
+        };
+
+        if (!dict.TryGetValue(val, out var result))
+        {
+            throw new NotImplementedException("Access modifier not supported.");
         }
 
         return result;

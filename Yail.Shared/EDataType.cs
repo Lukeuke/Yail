@@ -5,7 +5,7 @@ public enum EDataType
     Null,
     Any,
     Void,
-    Integer,
+    Int32,
     Boolean,
     Char,
     String,

@@ -36,7 +36,7 @@ foreach (var file in files)
     if (packages.Contains(fileName))
     {
         var source = File.ReadAllText(file);
-        input = string.Join(string.Empty, source, input);
+        input = string.Join("\n", source, input);
     }
 }
 
@@ -50,6 +50,10 @@ var parser = new ExpressionsParser(tokenStream);
 //parser.AddErrorListener(); // TODO: future
 
 var tree = parser.program();
+
+#if DEBUG
+//Console.WriteLine(tree.ToStringTree(parser)); 
+#endif
 
 var visitor = new ExpressionsVisitor();
 visitor.Visit(tree);

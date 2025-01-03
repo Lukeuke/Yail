@@ -86,6 +86,30 @@ x = addNumbers(3, 5);
 println(x);
 ```
 
+### Access modifiers
+
+```js
+package test
+
+funky test() string {
+  return "called from test()";
+}
+
+pub test2() string {
+  println("called test2()");
+  return test();
+}
+
+package main
+
+// Exception: Cannot call private function 'test'.
+println(test());
+// output: 
+// called test2()
+// called from test()
+println(test2());
+```
+
 ### Libraries
 
 ```js

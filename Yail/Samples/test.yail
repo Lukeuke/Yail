@@ -1,7 +1,14 @@
-﻿using math
+﻿package test
 
-println(abs(-1));
-println(abs(0));
-println(abs(1));
+funky test() string {
+    return "called from test()";
+}
 
-println(pow(2, 3));
+pub test2() string {
+    println("called test2()");
+    return test();
+}
+
+package main
+
+println(test2());

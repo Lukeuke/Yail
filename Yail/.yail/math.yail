@@ -1,6 +1,6 @@
 ﻿package math
 
-funky abs(i32 value) i32 {
+pub funky abs(i32 value) i32 {
     if value < 0 {
         return value * -1;
     }
@@ -8,7 +8,7 @@ funky abs(i32 value) i32 {
     return value;
 }
 
-funky pow(i32 value, i32 base) i32 {
+pub funky pow(i32 value, i32 base) i32 {
     var result = 1;
     
     while base > 0 {

@@ -15,7 +15,7 @@ public class IoHelper
         {
             return new ValueObj
             {
-                DataType = EDataType.Integer,
+                DataType = EDataType.Int32,
                 Value = result
             };
         }

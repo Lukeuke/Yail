@@ -36,7 +36,7 @@ public static class FileExtensionHelper
         var lines = text.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
         
         var output = lines.Where(line => 
-            !(line.StartsWith("package ") || line.StartsWith("using "))
+            !line.StartsWith("using ")
         ).ToList();
         
         return string.Join("\n", output);
