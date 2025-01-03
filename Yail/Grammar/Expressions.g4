@@ -64,7 +64,7 @@ functionCall
 
 statement: (variableDeclaration | assignment | operationAssignment | selfOperation | functionCall | break | return) ';';
 
-ifBlock: 'if' expression block ('else' elseIfBlock);
+ifBlock: 'if' expression block ('else' elseIfBlock)?;
 elseIfBlock: block | ifBlock;
 
 whileBlock: WHILE expression block ('else' elseIfBlock);

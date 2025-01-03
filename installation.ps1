@@ -11,6 +11,17 @@ Get-ChildItem -File | ForEach-Object {
     Copy-Item -Path $_.FullName -Destination $destinationDir -Force
 }
 
+Get-ChildItem -Recurse -Directory | ForEach-Object {
+    $destinationPath = Join-Path -Path $destinationDir -ChildPath $_.FullName.Substring($PWD.Path.Length + 1)
+
+    if (-not (Test-Path -Path $destinationPath)) {
+        New-Item -Path $destinationPath -ItemType Directory
+    }
+
+    Get-ChildItem -Path $_.FullName | ForEach-Object {
+        Copy-Item -Path $_.FullName -Destination $destinationPath -Force
+    }
+}
 Write-Host "Yail installed."
 
 $currentPath = [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::User)

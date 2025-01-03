@@ -16,8 +16,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include=".yail\math.yail" />
-      <Content Include=".yail\README.md" />
+      <Content Include="lib\math.yail" />
+      <Content Include="lib\README.md" />
       <Content Include="Grammar\Expressions.g4" />
     </ItemGroup>
 
@@ -25,4 +25,13 @@
       <ProjectReference Include="..\Yail.Shared\Yail.Shared.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Content Include="lib\*.*">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="..\installation.ps1">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+    
 </Project>

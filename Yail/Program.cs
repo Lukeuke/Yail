@@ -1,6 +1,7 @@
 ﻿using Antlr4.Runtime;
 using Yail;
 using Yail.Common;
+using Yail.Core;
 using Yail.Grammar;
 
 #if DEBUG
@@ -27,7 +28,7 @@ if (args.Length > 0)
 
 var packages = input.ExtractUsings();
 
-var folderPath = Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE") ?? string.Empty, ".yail");
+var folderPath = Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE") ?? string.Empty, ".yail", "lib");
 var files = FileExtensionHelper.GetFilesWithExtensions(folderPath, new[] { ".y", ".yail" });
 
 foreach (var file in files)
@@ -47,7 +48,11 @@ var inputStream = new AntlrInputStream(input);
 var lexer = new ExpressionsLexer(inputStream);
 var tokenStream = new CommonTokenStream(lexer);
 var parser = new ExpressionsParser(tokenStream);
-//parser.AddErrorListener(); // TODO: future
+
+if (args.Length > 0 && args[1] == "enable-errors")
+{
+    parser.AddErrorListener(new YailErrorListener());
+}
 
 var tree = parser.program();
 
