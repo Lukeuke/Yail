@@ -64,6 +64,96 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         return null;
     }
 
+    public override ValueObj? VisitOperationAssignment(ExpressionsParser.OperationAssignmentContext context)
+    {
+        var variableName = context.IDENTIFIER().GetText();
+
+        if (!_variables.TryGetValue(variableName, out var existingValue))
+        {
+            throw new InvalidOperationException($"Variable '{variableName}' is not defined.");
+        }
+
+        var rhsValue = Visit(context.expression());
+        rhsValue.ThrowIfNull();
+
+        var operation = context.addOp()?.GetText() ?? context.multiplyOp()?.GetText();
+        if (operation == null)
+        {
+            throw new InvalidOperationException($"Unknown operation in compound assignment for variable '{variableName}'.");
+        }
+
+        if (!_activeDirectives.Contains(YailTokens.DisableTypeChecks))
+        {
+            if (existingValue.Value.DataType != rhsValue.Value.DataType)
+                throw new Exception($"Data on variable '{existingValue}' type mismatch");
+        }
+        
+        var newValue = operation switch
+        {
+            "+" => OperationsHelper.Add((ValueObj)existingValue, (ValueObj)rhsValue),
+            "-" => OperationsHelper.Subtract((ValueObj)existingValue, (ValueObj)rhsValue),
+            "*" => OperationsHelper.Multiply((ValueObj)existingValue, (ValueObj)rhsValue),
+            "/" => OperationsHelper.Divide((ValueObj)existingValue, (ValueObj)rhsValue),
+            "%" => OperationsHelper.Modulo((ValueObj)existingValue, (ValueObj)rhsValue),
+            _ => throw new InvalidOperationException($"Unsupported operation '{operation}' in compound assignment.")
+        };
+
+        _variables[variableName] = newValue;
+
+        return null;
+    }
+
+    public override ValueObj? VisitSelfOperation(ExpressionsParser.SelfOperationContext context)
+    {
+        var variableName = context.IDENTIFIER().GetText();
+
+        if (!_variables.TryGetValue(variableName, out var valueObj))
+        {
+            throw new InvalidOperationException($"Variable '{variableName}' is not defined.");
+        }
+
+        valueObj.ThrowIfNull();
+
+        var preOp = context.children.FirstOrDefault()?.GetText();
+
+        var postOp = context.children.LastOrDefault()?.GetText();
+
+        var newValue = valueObj;
+
+        if (preOp != null && preOp != variableName)
+        {
+            newValue = PerformOperation(preOp, (ValueObj)valueObj);
+        }
+
+        _variables[variableName] = newValue;
+
+        if (postOp != null && postOp != variableName)
+        {
+            var oldValue = valueObj;
+            _variables[variableName] = PerformOperation(postOp, (ValueObj)valueObj);
+            return oldValue;
+        }
+
+        return newValue;
+    }
+
+    private ValueObj PerformOperation(string operation, ValueObj valueObj)
+    {
+        if (valueObj.DataType != EDataType.Integer && valueObj.DataType != EDataType.Double)
+        {
+            throw new InvalidOperationException($"Operation '{operation}' is not supported for type '{valueObj.DataType}'.");
+        }
+
+        return operation switch
+        {
+            "++" => OperationsHelper.Add(valueObj, new ValueObj { DataType = valueObj.DataType, Value = 1 }),
+            "--" => OperationsHelper.Subtract(valueObj, new ValueObj { DataType = valueObj.DataType, Value = 1 }),
+            "**" => OperationsHelper.Power(valueObj, new ValueObj { DataType = valueObj.DataType, Value = 2 }),
+            "//" => OperationsHelper.FloorDivide(valueObj, new ValueObj { DataType = valueObj.DataType, Value = 2 }),
+            _ => throw new InvalidOperationException($"Unknown operation '{operation}'.")
+        };
+    }
+    
     public override ValueObj? VisitIdentifierExpr(ExpressionsParser.IdentifierExprContext context)
     {
         var variableName = context.IDENTIFIER().GetText();

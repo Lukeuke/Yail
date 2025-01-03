@@ -25,6 +25,7 @@ compareOp: '==' | '!=' | '>' | '<' | '>=' | '<=';
 boolOp: 'and' | 'or' | 'xor'; // TODO:
 
 break: 'break';
+continue: 'continue'; // TODO:
 return: 'return' expression;
 
 expression
@@ -46,11 +47,14 @@ parameterList: parameter (',' parameter)*;
 parameter: DATA_TYPES IDENTIFIER;
 
 constant: INTEGER | DOUBLE | STRING | BOOL | CHAR | NULL;
-        
+
 assignment: IDENTIFIER '=' expression;
+operationAssignment: IDENTIFIER (addOp|multiplyOp) '=' expression;
+selfOperation: ('++'|'--'|'**'|'//')? IDENTIFIER ('++'|'--'|'**'|'//')?;
+
 functionCall: IDENTIFIER '(' (expression (',' expression)*)? ')';
 
-statement: (variableDeclaration | assignment | functionCall | break | return) ';';
+statement: (variableDeclaration | assignment | operationAssignment | selfOperation | functionCall | break | return) ';';
 
 ifBlock: 'if' expression block ('else' elseIfBlock);
 elseIfBlock: block | ifBlock;

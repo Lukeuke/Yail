@@ -61,7 +61,7 @@ public static class OperationsHelper
         throw new InvalidOperationException($"Unsupported data types for addition: {left.DataType} and {right.DataType}");
     }
     
-    public static ValueObj? Subtract(ValueObj left, ValueObj right)
+    public static ValueObj Subtract(ValueObj left, ValueObj right)
     {
         if (left.DataType == EDataType.Integer && right.DataType == EDataType.Integer)
         {
@@ -214,5 +214,66 @@ public static class OperationsHelper
         }
 
         throw new InvalidOperationException("Cannot compare values of different or unsupported types.");
+    }
+
+    public static ValueObj Power(ValueObj left, ValueObj right)
+    {
+        if (left.DataType != EDataType.Integer && left.DataType != EDataType.Double)
+        {
+            throw new InvalidOperationException("Power operation is only supported for integers and doubles.");
+        }
+
+        if (right.DataType != EDataType.Integer && right.DataType != EDataType.Double)
+        {
+            throw new InvalidOperationException("Exponent must be an integer or a double.");
+        }
+
+        var baseValue = Convert.ToDouble(left.Value);
+        var exponentValue = Convert.ToDouble(right.Value);
+
+        var result = Math.Pow(baseValue, exponentValue);
+
+        return new ValueObj
+        {
+            DataType = left.DataType == EDataType.Integer && right.DataType == EDataType.Integer
+                ? EDataType.Integer
+                : EDataType.Double,
+            Value = left.DataType == EDataType.Integer && right.DataType == EDataType.Integer
+                ? (object)(int)result
+                : result
+        };
+    }
+
+    public static ValueObj FloorDivide(ValueObj left, ValueObj right)
+    {
+        if (left.DataType != EDataType.Integer && left.DataType != EDataType.Double)
+        {
+            throw new InvalidOperationException("Floor division is only supported for integers and doubles.");
+        }
+
+        if (right.DataType != EDataType.Integer && right.DataType != EDataType.Double)
+        {
+            throw new InvalidOperationException("Divisor must be an integer or a double.");
+        }
+
+        var dividend = Convert.ToDouble(left.Value);
+        var divisor = Convert.ToDouble(right.Value);
+
+        if (Math.Abs(divisor) < double.Epsilon)
+        {
+            throw new DivideByZeroException("Cannot divide by zero.");
+        }
+
+        var result = Math.Floor(dividend / divisor);
+
+        return new ValueObj
+        {
+            DataType = left.DataType == EDataType.Integer && right.DataType == EDataType.Integer
+                ? EDataType.Integer
+                : EDataType.Double,
+            Value = left.DataType == EDataType.Integer && right.DataType == EDataType.Integer
+                ? (object)(int)result
+                : result
+        };
     }
 }
