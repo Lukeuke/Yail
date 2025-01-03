@@ -107,7 +107,7 @@ funky test() string {
   return "called from test()";
 }
 
-pub test2() string {
+pub funky test2() string {
   println("called test2()");
   return test();
 }
