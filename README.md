@@ -127,6 +127,8 @@ println(test2());
 ```js
 using math // library import
 
+package main // necessary to define main package
+
 println(abs(-5)); // function inside imported package
 ```
 
