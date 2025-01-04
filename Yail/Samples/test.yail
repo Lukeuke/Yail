@@ -1,5 +1,7 @@
-﻿using strlib
+﻿package main
 
-package main
+var x = ["test", "ad"] string;
 
-var x = "accd";
+foreach (var a in x) {
+    println(a);
+}

@@ -74,6 +74,17 @@ for var i = 0; i < 10; i++ {
 }
 ```
 
+Foreach
+```js
+package main
+
+var x = ["test", "ad"] string;
+
+foreach (var a in x) {
+    println(a);
+}
+```
+
 ### If-statements
 ```js
 var x = 5;

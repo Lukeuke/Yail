@@ -3,6 +3,7 @@
 // defines
 WHILE: 'while';
 FOR: 'for';
+FOREACH: 'foreach';
 INTEGER: '-'? [0-9]+;
 DOUBLE: '-'? [0-9]+ '.' [0-9]+;
 STRING: '"' (~["\r\n])* '"';
@@ -16,7 +17,7 @@ USE_IDENTIFIERS: 'disable-type-checking';
 
 // grammar
 program: line* EOF;
-line:  packageDeclaration | usingDirective | classBlock | directive | statement | ifBlock | whileBlock | forBlock | functionDeclaration | return;
+line:  packageDeclaration | usingDirective | classBlock | directive | statement | ifBlock | whileBlock | forBlock | foreachBlock | functionDeclaration | return;
 block: '{' line* '}'; 
 directive: '#' 'use' USE_IDENTIFIERS;
 
@@ -78,5 +79,6 @@ elseIfBlock: block | ifBlock;
 
 whileBlock: WHILE '('? expression ')'? block;
 forBlock: FOR '('? (variableDeclaration | assignment)? ';' expression? ';' (selfOperation)? ')'? block;
+foreachBlock: FOREACH '(' 'var' IDENTIFIER 'in' expression ')' block;
 
 classBlock: accessLevels? 'class' IDENTIFIER block; // TODO: future
