@@ -1,4 +1,5 @@
 ﻿using Yail.Common;
+using Yail.Common.Extentions;
 using Yail.Grammar;
 using Yail.Shared;
 
@@ -731,4 +732,28 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
 
         return value?.CastTo(targetType);
     }
+
+    #region Arrays
+
+    public override ValueObj? VisitArrayIndexExpr(ExpressionsParser.ArrayIndexExprContext context)
+    {
+        var accessedValue = (ValueObj)Visit(context.expression(0));
+        var indexValue = (ValueObj)Visit(context.expression(1));
+
+        if (indexValue.DataType != EDataType.Int32)
+        {
+            throw new Exception("Value must be i32");
+        }
+
+        var idx = indexValue.Value is int value ? value : 0;
+        
+        if (accessedValue.DataType == EDataType.String)
+        {
+            return ArrayAccessExtension.StringType(accessedValue, idx);
+        }
+
+        throw new Exception("Cannot use indexer on non-iterable data types.");
+    }
+
+    #endregion
 }

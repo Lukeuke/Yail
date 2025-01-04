@@ -1,11 +1,7 @@
 ﻿package main
 
-funky printEvens(n i32) void {
-    for (var i = 0; i < n; i++) {
-        if (i % 2 == 0) {
-            println(i);
-        }
-    }
-}
+var x = "hello";
 
-printEvens(5);
+for (var i = 0; i <= 4; i++) {
+    println(x[i]);
+}

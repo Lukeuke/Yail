@@ -130,6 +130,17 @@ println(test());
 println(test2());
 ```
 
+### Array access
+```js
+package main
+
+var x = "hello";
+
+for (var i = 0; i <= 4; i++) {
+    println(x[i]);
+}
+```
+
 ### Libraries
 
 ```js

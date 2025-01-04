@@ -41,6 +41,7 @@ expression
     | expression compareOp expression        #compareExpr
     | expression boolOp expression           #boolExpr
     | '(' DATA_TYPES ')' expression          #castExpr
+    | expression '[' (expression) ']'        #arrayIndexExpr
     ;
 
 packageDeclaration: 'package' IDENTIFIER;
