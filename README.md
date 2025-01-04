@@ -51,7 +51,8 @@ x += 1.0;
 println(typeof((string)x));
 ```
 
-### While-loops
+### Iterators
+While loops
 ```js
 var x = 5;
 
@@ -64,8 +65,15 @@ while true {
     println("break example");
     break;
 }
-
 ```
+
+For loops
+```js
+for var i = 0; i < 10; i++ {
+    println(i);
+}
+```
+
 ### If-statements
 ```js
 var x = 5;
@@ -79,7 +87,7 @@ else if x < 10 {
 else {
   println("???");
 }
-````
+```
 
 ### Functions
 

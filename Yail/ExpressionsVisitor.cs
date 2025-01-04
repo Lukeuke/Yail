@@ -614,6 +614,47 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         return null;
     }
 
+    public override ValueObj? VisitForBlock(ExpressionsParser.ForBlockContext context)
+    {
+        // Variable declaration or assignment
+        if (context.variableDeclaration() != null)
+        {
+            Visit(context.variableDeclaration());
+        }
+        else if (context.assignment() != null)
+        {
+            Visit(context.assignment());
+        }
+
+        // Expression
+        while (context.expression() == null || EvaluateCondition(context.expression()))
+        {
+            _shouldBreak = false;
+            _shouldContinue = false;
+
+            // Do work on lines inside for-loop
+            Visit(context.block());
+
+            if (_shouldBreak)
+                break;
+
+            if (_shouldContinue)
+                continue;
+
+            // Increment/Update (executed at the end of each iteration)
+            if (context.assignment() != null)
+            {
+                Visit(context.assignment());
+            }
+            else if (context.selfOperation() != null)
+            {
+                Visit(context.selfOperation());
+            }
+        }
+
+        return null;
+    }
+    
     private bool EvaluateCondition(ExpressionsParser.ExpressionContext conditionContext)
     {
         var conditionResult = Visit(conditionContext);
