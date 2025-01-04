@@ -15,8 +15,8 @@ USE_IDENTIFIERS: 'disable-type-checking';
 
 // grammar
 program: line* EOF;
-line: packageDeclaration | usingDirective | directive | statement | ifBlock | whileBlock | functionDeclaration | return;
-block: '{' line* '}';
+line:  packageDeclaration | usingDirective | classBlock | directive | statement | ifBlock | whileBlock | functionDeclaration | return;
+block: '{' line* '}'; 
 directive: '#' 'use' IDENTIFIER ('-' IDENTIFIER)*;
 
 multiplyOp: '*' | '/' | '%';
@@ -26,7 +26,7 @@ boolOp: 'and' | 'or' | 'xor';
 accessLevels: 'pub';
 
 break: 'break';
-continue: 'continue'; // TODO:
+continue: 'continue';
 return: 'return' expression;
 
 expression
@@ -62,9 +62,11 @@ functionCall
     | IDENTIFIER '::' IDENTIFIER '(' (expression (',' expression)*)? ')'    # namespacedFunctionCall
     ;
 
-statement: (variableDeclaration | assignment | operationAssignment | selfOperation | functionCall | break | return) ';';
+statement: (variableDeclaration | assignment | operationAssignment | selfOperation | functionCall | break | continue | return) ';';
 
 ifBlock: 'if' expression block ('else' elseIfBlock)?;
 elseIfBlock: block | ifBlock;
 
 whileBlock: WHILE expression block;
+
+classBlock: accessLevels? 'class' IDENTIFIER block;

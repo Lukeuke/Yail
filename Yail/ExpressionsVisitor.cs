@@ -557,18 +557,29 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
     }
 
     private bool _shouldBreak;
+    private bool _shouldContinue;
     public override ValueObj? VisitWhileBlock(ExpressionsParser.WhileBlockContext context)
     {
         while (EvaluateCondition(context.expression()))
         {
             _shouldBreak = false;
+            _shouldContinue = false;
+        
+            foreach (var line in context.block().line())
+            {
+                Visit(line);
 
-            Visit(context.block());
+                if (_shouldBreak)
+                    break;
+
+                if (_shouldContinue)
+                    break;
+            }
 
             if (_shouldBreak)
                 break;
         }
-        
+
         return null;
     }
 
@@ -601,6 +612,12 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
     public override ValueObj? VisitBreak(ExpressionsParser.BreakContext context)
     {
         _shouldBreak = true;
+        return null;
+    }
+
+    public override ValueObj? VisitContinue(ExpressionsParser.ContinueContext context)
+    {
+        _shouldContinue = true;
         return null;
     }
 

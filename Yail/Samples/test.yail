@@ -1,13 +1,15 @@
-﻿using math
+﻿package main
 
-package main
+var i = 5;
+while i > 0 {
 
-var x = -1;
+    if i is 2 {
+        println("continue");
+        i--;
+        continue;
+    }
 
-if x is 10 {
-  println(":D");
-}
+    println(i);
 
-if x is not 10 {
-  println(":(");
+    i--;
 }
