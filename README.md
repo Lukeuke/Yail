@@ -107,7 +107,7 @@ funky test() string {
   return "called from test()";
 }
 
-pub test2() string {
+pub funky test2() string {
   println("called test2()");
   return test();
 }
@@ -127,11 +127,16 @@ println(test2());
 ```js
 using math // library import
 
+package main // necessary to define main package
+
 println(abs(-5)); // function inside imported package
 ```
 
 ### Supports
 
 - [x] Int, bool, char, string, double, null
-- [x] '+' and '-' operators
+- [x] Single-line, multi-line comments
+- [x] Arrhythmic operators
 - [x] Console outputs ``print()`` / ``println()`` 
+- [x] Console input ``input()``
+- [x] Parsing ex.: ``parseInt()``

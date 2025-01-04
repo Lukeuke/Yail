@@ -2,8 +2,8 @@
 
 // defines
 WHILE: 'while';
-INTEGER: [0-9]+;
-DOUBLE: [0-9]+ '.' [0-9]+;
+INTEGER: '-'? [0-9]+;
+DOUBLE: '-'? [0-9]+ '.' [0-9]+;
 STRING: '"' (~["\r\n])* '"';
 BOOL: 'true' | 'false';
 CHAR: '\'' . '\'';
@@ -15,18 +15,18 @@ USE_IDENTIFIERS: 'disable-type-checking';
 
 // grammar
 program: line* EOF;
-line: packageDeclaration | usingDirective | directive | statement | ifBlock | whileBlock | functionDeclaration | return;
-block: '{' line* '}';
+line:  packageDeclaration | usingDirective | classBlock | directive | statement | ifBlock | whileBlock | functionDeclaration | return;
+block: '{' line* '}'; 
 directive: '#' 'use' IDENTIFIER ('-' IDENTIFIER)*;
 
 multiplyOp: '*' | '/' | '%';
 addOp: '+' | '-';
-compareOp: '==' | '!=' | '>' | '<' | '>=' | '<=';
+compareOp: '==' | 'is' | '!=' | 'is not' | '>' | '<' | '>=' | '<=';
 boolOp: 'and' | 'or' | 'xor';
 accessLevels: 'pub';
 
 break: 'break';
-continue: 'continue'; // TODO:
+continue: 'continue';
 return: 'return' expression;
 
 expression
@@ -34,7 +34,7 @@ expression
     | IDENTIFIER                             #identifierExpr
     | functionCall                           #functionCallExpr
     | '(' expression ')'                     #parenthesizedExpr
-    | '!' expression                         #negationExpr // TODO:
+    | '!' expression                         #negationExpr
     | expression multiplyOp expression       #multiplyExpr
     | expression addOp expression            #addExpr
     | expression compareOp expression        #compareExpr
@@ -62,9 +62,11 @@ functionCall
     | IDENTIFIER '::' IDENTIFIER '(' (expression (',' expression)*)? ')'    # namespacedFunctionCall
     ;
 
-statement: (variableDeclaration | assignment | operationAssignment | selfOperation | functionCall | break | return) ';';
+statement: (variableDeclaration | assignment | operationAssignment | selfOperation | functionCall | break | continue | return) ';';
 
-ifBlock: 'if' expression block ('else' elseIfBlock);
+ifBlock: 'if' expression block ('else' elseIfBlock)?;
 elseIfBlock: block | ifBlock;
 
-whileBlock: WHILE expression block ('else' elseIfBlock);
+whileBlock: WHILE expression block;
+
+classBlock: accessLevels? 'class' IDENTIFIER block; // TODO: future

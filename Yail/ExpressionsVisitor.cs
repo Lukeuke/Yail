@@ -256,6 +256,11 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         return result;
     }
 
+    public override ValueObj? VisitParenthesizedExpr(ExpressionsParser.ParenthesizedExprContext context)
+    {
+        return Visit(context.expression());
+    }
+
     #region Functions
     
     public override ValueObj? VisitSimpleFunctionCall(ExpressionsParser.SimpleFunctionCallContext context)
@@ -519,7 +524,9 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         var newValue = context.compareOp().GetText() switch
         {
             "==" => Equals((ValueObj)left, (ValueObj)right),
+            "is" => Equals((ValueObj)left, (ValueObj)right),
             "!=" => !Equals((ValueObj)left, (ValueObj)right),
+            "is not" => !Equals((ValueObj)left, (ValueObj)right),
             ">" => OperationsHelper.Compare((ValueObj)left, (ValueObj)right) > 0,
             "<" => OperationsHelper.Compare((ValueObj)left, (ValueObj)right) < 0,
             ">=" => OperationsHelper.Compare((ValueObj)left, (ValueObj)right) >= 0,
@@ -554,19 +561,56 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         return null;
     }
 
+    public override ValueObj? VisitNegationExpr(ExpressionsParser.NegationExprContext context)
+    {
+        var val = Visit(context.expression());
+
+        var result =  new ValueObj
+        {
+            DataType = EDataType.Boolean,
+            IsConst = true,
+            Value = false
+        };
+        
+        if (val is null || val.Value.DataType == EDataType.Null)
+        {
+            result.Value = true;
+            return result;
+        }
+
+        if (val.Value.DataType == EDataType.Boolean)
+        {
+            result.Value = !(bool)val.Value.Value!;
+            return result;
+        }
+
+        return result;
+    }
+
     private bool _shouldBreak;
+    private bool _shouldContinue;
     public override ValueObj? VisitWhileBlock(ExpressionsParser.WhileBlockContext context)
     {
         while (EvaluateCondition(context.expression()))
         {
             _shouldBreak = false;
+            _shouldContinue = false;
+        
+            foreach (var line in context.block().line())
+            {
+                Visit(line);
 
-            Visit(context.block());
+                if (_shouldBreak)
+                    break;
+
+                if (_shouldContinue)
+                    break;
+            }
 
             if (_shouldBreak)
                 break;
         }
-        
+
         return null;
     }
 
@@ -599,6 +643,12 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
     public override ValueObj? VisitBreak(ExpressionsParser.BreakContext context)
     {
         _shouldBreak = true;
+        return null;
+    }
+
+    public override ValueObj? VisitContinue(ExpressionsParser.ContinueContext context)
+    {
+        _shouldContinue = true;
         return null;
     }
 

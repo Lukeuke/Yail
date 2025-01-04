@@ -9,5 +9,6 @@ public enum EDataType
     Boolean,
     Char,
     String,
-    Double
+    Double,
+    Class
 }

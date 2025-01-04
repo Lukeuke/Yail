@@ -1,12 +1,5 @@
-﻿using math
+﻿package main
 
-package main
+var x = null;
 
-funky test() double {
-    return 1.45;
-}
-
-var x = test();
-x += 1.0;
-
-println(typeof((string)x));
+println(!(1 == 1));

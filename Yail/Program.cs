@@ -1,11 +1,14 @@
 ﻿using Antlr4.Runtime;
 using Yail;
 using Yail.Common;
+using Yail.Core;
 using Yail.Grammar;
 
 #if DEBUG
 var input = File.ReadAllText("""C:\Users\Luuqe\RiderProjects\yail\Yail\Samples\test.yail""");
+Console.ForegroundColor = ConsoleColor.Yellow;
 Console.WriteLine("[Debug mode]");
+Console.ResetColor();
 #else
 var input = string.Empty;
 if (args.Length < 1)
@@ -27,7 +30,7 @@ if (args.Length > 0)
 
 var packages = input.ExtractUsings();
 
-var folderPath = Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE") ?? string.Empty, ".yail");
+var folderPath = Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE") ?? string.Empty, ".yail", "lib");
 var files = FileExtensionHelper.GetFilesWithExtensions(folderPath, new[] { ".y", ".yail" });
 
 foreach (var file in files)
@@ -40,19 +43,29 @@ foreach (var file in files)
     }
 }
 
-input = input.RemovePackageAndUsingStatements();
+input = input
+    .RemoveComments()
+    .RemoveUsingStatements();
 
 var inputStream = new AntlrInputStream(input);
 
 var lexer = new ExpressionsLexer(inputStream);
 var tokenStream = new CommonTokenStream(lexer);
 var parser = new ExpressionsParser(tokenStream);
-//parser.AddErrorListener(); // TODO: future
+
+if (args.Length > 0 && args[1] == "enable-errors")
+{
+    parser.AddErrorListener(new YailErrorListener());
+}
+
+#if DEBUG
+parser.AddErrorListener(new YailErrorListener());
+#endif
 
 var tree = parser.program();
 
 #if DEBUG
-//Console.WriteLine(tree.ToStringTree(parser)); 
+Console.WriteLine(tree.ToStringTree(parser)); 
 #endif
 
 var visitor = new ExpressionsVisitor();

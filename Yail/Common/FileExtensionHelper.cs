@@ -31,7 +31,7 @@ public static class FileExtensionHelper
         return files.ToArray();
     }
     
-    public static string RemovePackageAndUsingStatements(this string text)
+    public static string RemoveUsingStatements(this string text)
     {
         var lines = text.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
         
@@ -39,6 +39,54 @@ public static class FileExtensionHelper
             !line.StartsWith("using ")
         ).ToList();
         
+        return string.Join("\n", output);
+    }
+
+    public static string RemoveComments(this string source)
+    {
+        var lines = source.Split(new[] { '\n', '\r' }, StringSplitOptions.None);
+        var output = new List<string>();
+
+        var inMultiLineComment = false;
+
+        foreach (var line in lines)
+        {
+            var trimmedLine = line.TrimEnd();
+
+            if (inMultiLineComment)
+            {
+                if (trimmedLine.Contains("*/"))
+                {
+                    inMultiLineComment = false;
+                }
+            }
+            else
+            {
+                var singleLineIdx = trimmedLine.IndexOf("//", StringComparison.Ordinal);
+
+                var multiLineStartIdx = trimmedLine.IndexOf("/*", StringComparison.Ordinal);
+
+                if (singleLineIdx != -1 && (multiLineStartIdx == -1 || singleLineIdx < multiLineStartIdx))
+                {
+                    output.Add(trimmedLine.Substring(0, singleLineIdx).TrimEnd());
+                }
+                else if (multiLineStartIdx != -1)
+                {
+                    output.Add(trimmedLine.Substring(0, multiLineStartIdx).TrimEnd());
+                    inMultiLineComment = true;
+                    
+                    if (trimmedLine.IndexOf("*/", multiLineStartIdx, StringComparison.Ordinal) != -1)
+                    {
+                        inMultiLineComment = false;
+                    }
+                }
+                else
+                {
+                    output.Add(trimmedLine);
+                }
+            }
+        }
+
         return string.Join("\n", output);
     }
 }

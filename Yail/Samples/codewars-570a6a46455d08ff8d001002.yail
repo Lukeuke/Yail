@@ -1,0 +1,5 @@
+﻿package main
+
+pub funky removeTrailingZeros(value string) string {
+    
+}
