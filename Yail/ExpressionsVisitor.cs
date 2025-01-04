@@ -729,6 +729,8 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         return result;
     }
 
+    #region Iterations
+    
     private bool _shouldBreak;
     private bool _shouldContinue;
     public override ValueObj? VisitWhileBlock(ExpressionsParser.WhileBlockContext context)
@@ -796,6 +798,29 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
 
         return null;
     }
+
+    public override ValueObj? VisitForeachBlock(ExpressionsParser.ForeachBlockContext context)
+    {
+        var loopVarName = context.IDENTIFIER().GetText();
+
+        var collectionExpression = context.expression();
+        
+        var collection = Visit(collectionExpression);
+        if (collection is not ArrayObj array)
+        {
+            throw new InvalidOperationException("You can only iterate on arrays.");
+        }
+        
+        foreach (var item in array.Items)
+        {
+            AddOrAssignVariable(loopVarName, item);
+            Visit(context.block());
+        }
+
+        return null;
+    }
+
+    #endregion
     
     private bool EvaluateCondition(ExpressionsParser.ExpressionContext conditionContext)
     {
@@ -956,12 +981,24 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
 
         _variables.Add(name, value);
     }
+    
+    private void AddOrAssignVariable(string name, ValueObj value)
+    {
+        if (_variables.TryGetValue(name, out _))
+        {
+            _variables[name] = value;
+            return;
+        }
+        
+        _variables.Add(name, value);
+    }
 
     private FunctionDefinition? GetFunction(string package, string name)
     {
         _functions.TryGetValue($"{package}::{name}", out var fun);
         return fun;
     }
+    
     private bool SetFunction(string package, string name, FunctionDefinition function)
     {
         return _functions.TryAdd($"{package}::{name}", function);
