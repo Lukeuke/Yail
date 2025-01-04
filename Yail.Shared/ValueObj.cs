@@ -1,10 +1,10 @@
 ﻿namespace Yail.Shared;
 
-public struct ValueObj
+public class ValueObj
 {
-    public bool IsConst;
-    public object? Value;
-    public EDataType DataType;
+    public bool IsConst { get; set; }
+    public object? Value { get; set; }
+    public EDataType DataType { get; set; }
 
     public override bool Equals(object? obj)
     {

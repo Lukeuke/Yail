@@ -10,5 +10,6 @@ public enum EDataType
     Char,
     String,
     Double,
+    Array,
     Class
 }

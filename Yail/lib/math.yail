@@ -1,6 +1,6 @@
 ﻿package math
 
-pub funky abs(i32 value) i32 {
+pub funky abs(value i32) i32 {
     if value < 0 {
         return value * -1;
     }
@@ -8,7 +8,7 @@ pub funky abs(i32 value) i32 {
     return value;
 }
 
-pub funky pow(i32 value, i32 base) i32 {
+pub funky pow(value i32, base i32) i32 {
     var result = 1;
     
     while base > 0 {
@@ -19,11 +19,11 @@ pub funky pow(i32 value, i32 base) i32 {
     return result;
 }
 
-pub funky floor(double value) i32 {
+pub funky floor(value double) i32 {
     return (i32)value;
 }
 
-pub funky round(double value, i32 floatingPoint) double {
+pub funky round(value double, floatingPoint i32) double {
     var multiplier = 1;
     
     var i = 0;

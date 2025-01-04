@@ -38,7 +38,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         var value = Visit(context.expression());
         if (value is null) return null;
 
-        if (value.Value.DataType is EDataType.Void)
+        if (value.DataType is EDataType.Void)
         {
             return null;
         }
@@ -56,7 +56,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             return null;
         }
         
-        if (prevVal!.Value.DataType != value.Value.DataType)
+        if (prevVal!.DataType != value.DataType)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.Error.WriteLine($"Variable '${variableName}' type does not match.");
@@ -88,7 +88,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
 
         if (!_activeDirectives.Contains(YailTokens.DisableTypeChecks))
         {
-            if (existingValue.Value.DataType != rhsValue.Value.DataType)
+            if (existingValue.DataType != rhsValue.DataType)
                 throw new Exception($"Data on variable '{existingValue}' type mismatch");
         }
         
@@ -166,7 +166,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
 
         if (value is null) return null;
         
-        if (value.Value.DataType is EDataType.Void)
+        if (value.DataType is EDataType.Void)
         {
             return null;
         }
@@ -275,10 +275,10 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             //_currentPackage = functionDefinition.Package;
             _callStack.Push(functionDefinition);
         }
-        else
+        /*else
         {
             _callStack.Clear();
-        }
+        }*/
         
         if (functionName == YailTokens.Print)
         {
@@ -287,7 +287,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
                 var valueObj = Visit(exprContext);
                 if (valueObj != null)
                 {
-                    Console.Write(valueObj.Value.Value);
+                    Console.Write(valueObj.Value);
                 }
             }
             return null;
@@ -299,7 +299,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
                 var valueObj = Visit(exprContext);
                 if (valueObj != null)
                 {
-                    Console.WriteLine(valueObj.Value.Value);
+                    Console.WriteLine(valueObj.Value);
                 }
             }
             return null;
@@ -357,7 +357,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             return new ValueObj
             {
                 DataType = EDataType.String,
-                Value = argument.Value.Value!.ToString()
+                Value = argument.Value!.ToString()
             };
         }
         if (functionName == YailTokens.Typeof)
@@ -376,7 +376,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             return new ValueObj
             {
                 DataType = EDataType.String,
-                Value = argument.Value.DataType!.ToString()
+                Value = argument.DataType.ToString()
             };
         }
         
@@ -386,7 +386,18 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
 
             if (isPrivate)
             {
-                var canCallPrivate = _callStack.Any(ancestor => ancestor.AccessModifier == EAccessModifier.Public) || _currentPackage == functionInfo.Package;
+                bool any = false;
+                foreach (var ancestor in _callStack)
+                {
+                    // check if ancesor is public and is from the same package
+                    if (ancestor.AccessModifier == EAccessModifier.Public && ancestor.Package == functionInfo.Package) 
+                    {
+                        any = true;
+                        break;
+                    }
+                }
+
+                var canCallPrivate = any || _currentPackage == functionInfo.Package;
 
                 if (!canCallPrivate)
                 {
@@ -451,12 +462,12 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             // Dynamically set the function return type if any
             if (functionInfo.ReturnType == EDataType.Any)
             {
-                functionInfo.ReturnType = returnValue.Value.DataType;
+                functionInfo.ReturnType = returnValue.DataType;
             }
 
-            if (returnValue.Value.DataType != functionInfo.ReturnType)
+            if (returnValue.DataType != functionInfo.ReturnType)
             {
-                throw new Exception($"Return type does not match on function {functionName}.\nExpected: '{returnValue.Value.DataType}' was '{functionInfo.ReturnType}'.");
+                throw new Exception($"Return type does not match on function {functionName}.\nExpected: '{returnValue.DataType}' was '{functionInfo.ReturnType}'.");
             }
 
             returnValueFromFunction = null;
@@ -573,15 +584,15 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             Value = false
         };
         
-        if (val is null || val.Value.DataType == EDataType.Null)
+        if (val is null || val.DataType == EDataType.Null)
         {
             result.Value = true;
             return result;
         }
 
-        if (val.Value.DataType == EDataType.Boolean)
+        if (val.DataType == EDataType.Boolean)
         {
-            result.Value = !(bool)val.Value.Value!;
+            result.Value = !(bool)val.Value!;
             return result;
         }
 
@@ -665,12 +676,12 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             return false;
         }
         
-        if (conditionResult is null || conditionResult.Value.DataType != EDataType.Boolean)
+        if (conditionResult is null || conditionResult.DataType != EDataType.Boolean)
         {
             throw new InvalidOperationException("Condition in must evaluate to a boolean value.");
         }
 
-        return (bool)conditionResult.Value.Value!;
+        return (bool)conditionResult.Value!;
     }
 
     public override ValueObj? VisitReturn(ExpressionsParser.ReturnContext context)
@@ -753,6 +764,27 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         }
 
         throw new Exception("Cannot use indexer on non-iterable data types.");
+    }
+
+    /*public override ValueObj? VisitArrayDeclaration(ExpressionsParser.ArrayDeclarationContext context)
+    {
+        var array = Visit(context.arrayLiteral());
+
+        array.ThrowIfNull();
+        
+        _variables[]
+        
+        return null;
+    }*/
+
+    public override ValueObj? VisitArrayLiteral(ExpressionsParser.ArrayLiteralContext context)
+    {
+        var values = context.expression().Select(expr => (ValueObj)Visit(expr)).ToList();
+        return new ValueObj
+        {
+            DataType = EDataType.Array,
+            Value = values
+        };
     }
 
     #endregion

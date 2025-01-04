@@ -18,13 +18,14 @@ USE_IDENTIFIERS: 'disable-type-checking';
 program: line* EOF;
 line:  packageDeclaration | usingDirective | classBlock | directive | statement | ifBlock | whileBlock | forBlock | functionDeclaration | return;
 block: '{' line* '}'; 
-directive: '#' 'use' IDENTIFIER ('-' IDENTIFIER)*;
+directive: '#' 'use' USE_IDENTIFIERS;
 
 multiplyOp: '*' | '/' | '%';
 addOp: '+' | '-';
 compareOp: '==' | 'is' | '!=' | 'is not' | '>' | '<' | '>=' | '<=';
 boolOp: 'and' | 'or' | 'xor';
 accessLevels: 'pub';
+arrayLiteral: '[' (expression (',' expression)*)? ']' ;
 
 break: 'break';
 continue: 'continue';
@@ -49,6 +50,7 @@ usingDirective: 'using' IDENTIFIER;
 
 variableDeclaration: 'var' IDENTIFIER '=' expression;
 functionDeclaration: (accessLevels)? 'funky' IDENTIFIER '(' (parameterList)? ')' DATA_TYPES block;
+arrayDeclaration: 'var' IDENTIFIER '=' arrayLiteral DATA_TYPES;
 
 parameterList: parameter (',' parameter)*;
 parameter: IDENTIFIER DATA_TYPES;
@@ -64,7 +66,7 @@ functionCall
     | IDENTIFIER '::' IDENTIFIER '(' (expression (',' expression)*)? ')'    # namespacedFunctionCall
     ;
 
-statement: (variableDeclaration | assignment | operationAssignment | selfOperation | functionCall | break | continue | return) ';';
+statement: (variableDeclaration | arrayDeclaration | assignment | operationAssignment | selfOperation | functionCall | break | continue | return) ';';
 
 // Blocks
 ifBlock: 'if' '('? expression ')'? block ('else' elseIfBlock)?;
