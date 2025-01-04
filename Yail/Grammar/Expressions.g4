@@ -50,7 +50,7 @@ variableDeclaration: 'var' IDENTIFIER '=' expression;
 functionDeclaration: (accessLevels)? 'funky' IDENTIFIER '(' (parameterList)? ')' DATA_TYPES block;
 
 parameterList: parameter (',' parameter)*;
-parameter: DATA_TYPES IDENTIFIER;
+parameter: IDENTIFIER DATA_TYPES;
 
 constant: INTEGER | DOUBLE | STRING | BOOL | CHAR | NULL;
 
@@ -65,10 +65,11 @@ functionCall
 
 statement: (variableDeclaration | assignment | operationAssignment | selfOperation | functionCall | break | continue | return) ';';
 
-ifBlock: 'if' expression block ('else' elseIfBlock)?;
+// Blocks
+ifBlock: 'if' '('? expression ')'? block ('else' elseIfBlock)?;
 elseIfBlock: block | ifBlock;
 
-whileBlock: WHILE expression block;
+whileBlock: WHILE '('? expression ')'? block;
 forBlock: FOR '('? (variableDeclaration | assignment)? ';' expression? ';' (selfOperation)? ')'? block;
 
 classBlock: accessLevels? 'class' IDENTIFIER block; // TODO: future

@@ -1,5 +1,11 @@
 ﻿package main
 
-for var i = 0; i < 10; i++ {
-    println(i);
+funky printEvens(n i32) void {
+    for (var i = 0; i < n; i++) {
+        if (i % 2 == 0) {
+            println(i);
+        }
+    }
 }
+
+printEvens(5);

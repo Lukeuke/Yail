@@ -94,7 +94,7 @@ else {
 ```js
 var x = 5;
 
-funky addNumbers(i32 a, i32 b) i32 {
+funky addNumbers(a i32, b i32) i32 {
 
     println(x); // <- NOTE: value not accessable here
 
