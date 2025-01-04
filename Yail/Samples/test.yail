@@ -1,5 +1,5 @@
 ﻿package main
 
-var x = null;
-
-println(!(1 == 1));
+for var i = 0; i < 10; i++ {
+    println(i);
+}
