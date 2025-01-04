@@ -1,0 +1,5 @@
+﻿using "test.yail" // only windows support
+
+package main
+
+test::publicFn();

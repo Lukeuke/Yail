@@ -1,7 +1,10 @@
-﻿package main
+package test
 
-var x = ["test", "ad"] string;
+funky privateFn() void {
+  println("calling privateFn");
+}
 
-foreach (var a in x) {
-    println(a);
+pub funky publicFn() void {
+  println("calling publicFn");
+  test::privateFn();
 }

@@ -16,8 +16,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="lib\math.yail" />
-      <Content Include="lib\README.md" />
       <Content Include="Grammar\Expressions.g4" />
     </ItemGroup>
 

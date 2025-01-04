@@ -5,12 +5,14 @@ using Yail.Core;
 using Yail.Grammar;
 
 #if DEBUG
-var input = File.ReadAllText("""C:\Users\Luuqe\RiderProjects\yail\Yail\Samples\test.yail""");
+var filePath = """C:\Users\Luuqe\RiderProjects\yail\Yail\Samples\main.yail""";
+var input = File.ReadAllText(filePath);
 Console.ForegroundColor = ConsoleColor.Yellow;
 Console.WriteLine("[Debug mode]");
 Console.ResetColor();
 #else
 var input = string.Empty;
+var filePath = string.Empty;
 if (args.Length < 1)
 {
     ExceptionHelper.PrintError("Provide source file path.");
@@ -19,7 +21,7 @@ if (args.Length < 1)
 
 if (args.Length > 0)
 {
-    var filePath = args[0];
+    filePath = args[0];
     if (!filePath.CheckExt())
     {
         ExceptionHelper.PrintError("Yail source files must end with '.y' or '.yail'.");
@@ -33,19 +35,18 @@ var packages = input.ExtractUsings();
 var folderPath = Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE") ?? string.Empty, ".yail", "lib");
 var files = FileExtensionHelper.GetFilesWithExtensions(folderPath, new[] { ".y", ".yail" });
 
-foreach (var file in files)
-{
-    var fileName = Path.GetFileName(file).Split(".").First();
-    if (packages.Contains(fileName))
-    {
-        var source = File.ReadAllText(file);
-        input = string.Join("\n", source, input);
-    }
-}
+FillBuiltInPackages();
+
+FillExternalPackages();
 
 input = input
-    .RemoveComments()
+    .RemoveCommentedContent()
     .RemoveUsingStatements();
+    
+if (args.Any(x => x == "disable-explicit-function-calls"))
+{
+    input = input.FillThePackageBeforeFunctionCall();
+}
 
 var inputStream = new AntlrInputStream(input);
 
@@ -53,7 +54,7 @@ var lexer = new ExpressionsLexer(inputStream);
 var tokenStream = new CommonTokenStream(lexer);
 var parser = new ExpressionsParser(tokenStream);
 
-if (args.Length > 0 && args[1] == "enable-errors")
+if (args.Any(x => x == "enable-errors"))
 {
     parser.AddErrorListener(new YailErrorListener());
 }
@@ -70,3 +71,31 @@ Console.WriteLine(tree.ToStringTree(parser));
 
 var visitor = new ExpressionsVisitor();
 visitor.Visit(tree);
+
+void FillBuiltInPackages()
+{
+    foreach (var file in files)
+    {
+        var fileName = Path.GetFileName(file).Split(".").First();
+        if (packages.Contains(fileName))
+        {
+            var source = File.ReadAllText(file);
+            input = string.Join("\n", source, input);
+        }
+    }
+}
+
+void FillExternalPackages()
+{
+    foreach(var extPkg in packages.Where(x => x.EndsWith(".yail") || x.EndsWith(".y"))) 
+    {
+        if (Environment.OSVersion.VersionString.Contains("Windows"))
+        {
+            var paths = filePath.Split("\\")[.. ^1];
+            var projectDirectoryPath = string.Join( '\\', paths);
+
+            var pkgSource = File.ReadAllText(Path.Combine(projectDirectoryPath, extPkg));
+            input = string.Join(Environment.NewLine, pkgSource, input);
+        }
+    }
+}

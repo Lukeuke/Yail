@@ -2,6 +2,7 @@
 using Yail.Common.Extentions;
 using Yail.Grammar;
 using Yail.Shared;
+using Yail.Shared.Constants;
 using Yail.Shared.Objects;
 
 namespace Yail;
@@ -273,8 +274,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
     {
         var functionName = context.IDENTIFIER().GetText();
         
-        _ = _functions.TryGetValue(functionName, out var functionDefinition);
-
+        var functionDefinition = GetFunction(_currentPackage, functionName);
         if (functionDefinition is not null)
         {
             //_currentPackage = functionDefinition.Package;
@@ -285,7 +285,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             _callStack.Clear();
         }*/
         
-        if (functionName == YailTokens.Print)
+        if (functionName == YailBuiltInFunctions.Print)
         {
             foreach (var exprContext in context.expression())
             {
@@ -297,7 +297,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             }
             return null;
         }
-        if (functionName == YailTokens.PrintLn)
+        if (functionName == YailBuiltInFunctions.PrintLn)
         {
             foreach (var exprContext in context.expression())
             {
@@ -309,7 +309,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             }
             return null;
         }
-        if (functionName == YailTokens.Input)
+        if (functionName == YailBuiltInFunctions.Input)
         {
             var inputValue = Console.ReadLine();
             var result = new ValueObj
@@ -319,7 +319,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             };
             return result;
         }
-        if (functionName == YailTokens.ParseInt)
+        if (functionName == YailBuiltInFunctions.ParseInt)
         {
             if (context.expression().Length != 1)
             {
@@ -328,7 +328,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             var argument = Visit(context.expression(0));
             return IoHelper.ParseInt((ValueObj)argument);
         }
-        if (functionName == YailTokens.ParseDouble)
+        if (functionName == YailBuiltInFunctions.ParseDouble)
         {
             if (context.expression().Length != 1)
             {
@@ -337,7 +337,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             var argument = Visit(context.expression(0));
             return IoHelper.ParseDouble((ValueObj)argument);
         }
-        if (functionName == YailTokens.ParseBool)
+        if (functionName == YailBuiltInFunctions.ParseBool)
         {
             if (context.expression().Length != 1)
             {
@@ -346,7 +346,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             var argument = Visit(context.expression(0));
             return IoHelper.ParseBool((ValueObj)argument);
         }
-        if (functionName == YailTokens.ToString)
+        if (functionName == YailBuiltInFunctions.ToString)
         {
             if (context.expression().Length != 1)
             {
@@ -365,7 +365,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
                 Value = argument.Value!.ToString()
             };
         }
-        if (functionName == YailTokens.ToCharArray)
+        if (functionName == YailBuiltInFunctions.ToCharArray)
         {
             if (context.expression().Length != 1)
             {
@@ -382,7 +382,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             var arr = n.Select(x => new ValueObj(x, EDataType.Char)).ToList();
             return new ArrayObj(arr);
         }
-        if (functionName == YailTokens.Typeof)
+        if (functionName == YailBuiltInFunctions.Typeof)
         {
             if (context.expression().Length != 1)
             {
@@ -401,8 +401,9 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
                 Value = argument.DataType.ToString()
             };
         }
-        
-        if (_functions.TryGetValue(functionName, out var functionInfo))
+
+        var functionInfo = GetFunction(_currentPackage, functionName);
+        if (functionInfo is not null)
         {
             var isPrivate = functionInfo.AccessModifier == EAccessModifier.Private;
 
@@ -501,10 +502,117 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
 
     public override ValueObj? VisitNamespacedFunctionCall(ExpressionsParser.NamespacedFunctionCallContext context)
     {
-        var packageName = context.IDENTIFIER()[0];
-        var functionName = context.IDENTIFIER()[1];
+        var package = context.IDENTIFIER(0).GetText();
+        var functionName = context.IDENTIFIER(1).GetText();
+
+        var functionDefinition = GetFunction(package, functionName);
+
+        if (functionDefinition is not null)
+        {
+            //_currentPackage = functionDefinition.Package;
+            _callStack.Push(functionDefinition);
+        }
+        /*else
+        {
+            _callStack.Clear();
+        }*/
         
-        return base.VisitNamespacedFunctionCall(context);
+        var functionInfo = GetFunction(package, functionName);
+        if (functionInfo is not null)
+        {
+            var isPrivate = functionInfo.AccessModifier == EAccessModifier.Private;
+
+            if (isPrivate)
+            {
+                bool any = false;
+                foreach (var ancestor in _callStack)
+                {
+                    // check if ancesor is public and is from the same package
+                    if (ancestor.AccessModifier == EAccessModifier.Public && ancestor.Package == functionInfo.Package) 
+                    {
+                        any = true;
+                        break;
+                    }
+                }
+
+                var canCallPrivate = any || _currentPackage == functionInfo.Package;
+
+                if (!canCallPrivate)
+                {
+                    throw new Exception($"Cannot call private function '{functionName}'.");
+                }
+            }
+            
+            var arguments = new List<ValueObj?>();
+            foreach (var exprContext in context.expression())
+            {
+                var value = Visit(exprContext);
+                arguments.Add(value);
+            }
+
+            // Check if the number of arguments matches
+            if (arguments.Count != functionInfo.Parameters.Count)
+            {
+                throw new InvalidOperationException($"Function '{functionName}' expects {functionInfo.Parameters.Count} parameters.");
+            }
+
+            // Create a new scope for function parameters
+            var functionScope = new Dictionary<string, ValueObj?>();
+            for (var i = 0; i < arguments.Count; i++)
+            {
+                functionScope[functionInfo.Parameters[i].Name] = arguments[i];
+            }
+
+            // Save the current variable scope and switch to the function's scope
+            var currentScope = _variables;
+            _variables = new Dictionary<string, ValueObj?>(functionScope);
+
+            var body = functionInfo.Body as ExpressionsParser.BlockContext;
+            foreach (var statementContext in body.line())
+            {
+                if (returnValueFromFunction is not null)
+                {
+                    break;
+                }
+
+                _ = Visit(statementContext);
+
+                if (returnValueFromFunction is not null)
+                {
+                    break;
+                }
+            }
+
+            if (functionInfo.ReturnType == EDataType.Void)
+            {
+                return new ValueObj
+                {
+                    DataType = EDataType.Void,
+                    Value = null,
+                    IsConst = true
+                };
+            }
+
+            _variables = currentScope;
+
+            var returnValue = returnValueFromFunction;
+
+            // Dynamically set the function return type if any
+            if (functionInfo.ReturnType == EDataType.Any)
+            {
+                functionInfo.ReturnType = returnValue.DataType;
+            }
+
+            if (returnValue.DataType != functionInfo.ReturnType)
+            {
+                throw new Exception($"Return type does not match on function {functionName}.\nExpected: '{returnValue.DataType}' was '{functionInfo.ReturnType}'.");
+            }
+
+            returnValueFromFunction = null;
+            return returnValue;
+        }
+
+        throw new InvalidOperationException($"Undefined function: {functionName}");
     }
 
     public override ValueObj? VisitFunctionDeclaration(ExpressionsParser.FunctionDeclarationContext context)
@@ -534,7 +642,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         var body = context.block();
 
         var functionInfo = new FunctionDefinition(functionName, accessLevelName.ToAccessLevel(),returnType.ToDataType(), parameters, body, _currentPackage);
-        _functions[functionName] = functionInfo;
+        SetFunction(_currentPackage, functionName, functionInfo);
 
         return null;
     }
@@ -873,7 +981,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
 
         _variables.Add(name, value);
     }
-
+    
     private void AddOrAssignVariable(string name, ValueObj value)
     {
         if (_variables.TryGetValue(name, out _))
@@ -883,5 +991,16 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         }
         
         _variables.Add(name, value);
+    }
+
+    private FunctionDefinition? GetFunction(string package, string name)
+    {
+        _functions.TryGetValue($"{package}::{name}", out var fun);
+        return fun;
+    }
+    
+    private bool SetFunction(string package, string name, FunctionDefinition function)
+    {
+        return _functions.TryAdd($"{package}::{name}", function);
     }
 }
