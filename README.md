@@ -130,7 +130,7 @@ println(test());
 println(test2());
 ```
 
-### Array access
+### Arrays
 ```js
 package main
 
@@ -139,6 +139,16 @@ var x = "hello";
 for (var i = 0; i <= 4; i++) {
     println(x[i]);
 }
+```
+
+```js
+var x = [1, 2] i32;
+
+println(x[-1]); // 2
+
+x[-1] = 0;
+
+println(x[-1]); // 0
 ```
 
 ### Libraries

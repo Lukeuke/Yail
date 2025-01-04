@@ -25,7 +25,9 @@ addOp: '+' | '-';
 compareOp: '==' | 'is' | '!=' | 'is not' | '>' | '<' | '>=' | '<=';
 boolOp: 'and' | 'or' | 'xor';
 accessLevels: 'pub';
+
 arrayLiteral: '[' (expression (',' expression)*)? ']' ;
+arrayAccessor: '[' (expression) ']';
 
 break: 'break';
 continue: 'continue';
@@ -42,7 +44,7 @@ expression
     | expression compareOp expression        #compareExpr
     | expression boolOp expression           #boolExpr
     | '(' DATA_TYPES ')' expression          #castExpr
-    | expression '[' (expression) ']'        #arrayIndexExpr
+    | expression arrayAccessor               #arrayIndexExpr
     ;
 
 packageDeclaration: 'package' IDENTIFIER;
@@ -57,7 +59,7 @@ parameter: IDENTIFIER DATA_TYPES;
 
 constant: INTEGER | DOUBLE | STRING | BOOL | CHAR | NULL;
 
-assignment: IDENTIFIER '=' expression;
+assignment: IDENTIFIER arrayAccessor? '=' expression;
 operationAssignment: IDENTIFIER (addOp|multiplyOp) '=' expression;
 selfOperation: ('++'|'--'|'**'|'//')? IDENTIFIER ('++'|'--'|'**'|'//')?;
 

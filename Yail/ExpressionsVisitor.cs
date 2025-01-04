@@ -2,6 +2,7 @@
 using Yail.Common.Extentions;
 using Yail.Grammar;
 using Yail.Shared;
+using Yail.Shared.Objects;
 
 namespace Yail;
 
@@ -19,15 +20,8 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
     {
         var variableName = context.IDENTIFIER().GetText();
         var value = Visit(context.expression());
-        
-        if (_variables.TryGetValue(variableName, out _))
-        {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.Error.WriteLine($"Variable '${variableName}' is already defined.");
-            Environment.Exit(1);
-        }
 
-        _variables.Add(variableName, value);
+        AddVariable(variableName, value);
         
         return null;
     }
@@ -50,6 +44,17 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             Environment.Exit(1);
         }
 
+        if (prevVal.GetType() == typeof(ArrayObj))
+        {
+            var idxVal = Visit(context.arrayAccessor().expression());
+
+            var idx = (int)idxVal.Value;
+            
+            ((ArrayObj)prevVal).Set(idx, value);
+            _variables[variableName] = prevVal;
+            return null;
+        }
+        
         if (_activeDirectives.Contains(YailTokens.DisableTypeChecks))
         {
             _variables[variableName] = value;
@@ -748,8 +753,8 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
 
     public override ValueObj? VisitArrayIndexExpr(ExpressionsParser.ArrayIndexExprContext context)
     {
-        var accessedValue = (ValueObj)Visit(context.expression(0));
-        var indexValue = (ValueObj)Visit(context.expression(1));
+        var accessedValue = (ValueObj)Visit(context.expression());
+        var indexValue = (ValueObj)Visit(context.arrayAccessor().expression());
 
         if (indexValue.DataType != EDataType.Int32)
         {
@@ -763,29 +768,43 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             return ArrayAccessExtension.StringType(accessedValue, idx);
         }
 
+        if (accessedValue.GetType() == typeof(ArrayObj))
+        {
+            return ((ArrayObj)accessedValue).Get(idx);
+        }
+        
         throw new Exception("Cannot use indexer on non-iterable data types.");
     }
 
-    /*public override ValueObj? VisitArrayDeclaration(ExpressionsParser.ArrayDeclarationContext context)
+    public override ValueObj? VisitArrayDeclaration(ExpressionsParser.ArrayDeclarationContext context)
     {
-        var array = Visit(context.arrayLiteral());
+        var array = Visit(context.arrayLiteral()) as ArrayObj;
+        var variableName = context.IDENTIFIER().GetText();
 
         array.ThrowIfNull();
         
-        _variables[]
+        AddVariable(variableName, array);
         
         return null;
-    }*/
+    }
 
     public override ValueObj? VisitArrayLiteral(ExpressionsParser.ArrayLiteralContext context)
     {
         var values = context.expression().Select(expr => (ValueObj)Visit(expr)).ToList();
-        return new ValueObj
-        {
-            DataType = EDataType.Array,
-            Value = values
-        };
+        return new ArrayObj(values);
     }
 
     #endregion
+
+    private void AddVariable(string name, ValueObj value)
+    {
+        if (_variables.TryGetValue(name, out _))
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Error.WriteLine($"Variable '${name}' is already defined.");
+            Environment.Exit(1);
+        }
+
+        _variables.Add(name, value);
+    }
 }
