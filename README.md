@@ -1,7 +1,10 @@
 # Yail (Yet another interpreted language)
 Created out of pure fun. Not for real use.
 
-## Samples:
+## Conventions
+<!> **Package names must be equal to its file names**!
+
+## Examples:
 
 ### Variables
 
