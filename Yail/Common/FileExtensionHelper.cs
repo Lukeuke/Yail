@@ -1,4 +1,8 @@
-﻿namespace Yail.Common;
+﻿using System.Text.RegularExpressions;
+using Yail.Shared;
+using Yail.Shared.Constants;
+
+namespace Yail.Common;
 
 public static class FileExtensionHelper
 {
@@ -39,10 +43,10 @@ public static class FileExtensionHelper
             !line.StartsWith("using ")
         ).ToList();
         
-        return string.Join("\n", output);
+        return string.Join(Environment.NewLine, output);
     }
 
-    public static string RemoveComments(this string source)
+    public static string RemoveCommentedContent(this string source)
     {
         var lines = source.Split(new[] { '\n', '\r' }, StringSplitOptions.None);
         var output = new List<string>();
@@ -87,6 +91,51 @@ public static class FileExtensionHelper
             }
         }
 
-        return string.Join("\n", output);
+        return string.Join(Environment.NewLine, output);
+    }
+
+    public static string FillThePackageBeforeFunctionCall(this string text)
+    {
+        const string packagePattern = @"package\s+([a-zA-Z_][a-zA-Z0-9_]*)";
+        var functionCallPattern = @"(?<!\w|\:\:|{0}\s)\b([a-zA-Z_][a-zA-Z0-9_]*)\s*\([^;]*\)\s*;".Replace("{0}", YailTokens.FunctionDeclaration);
+        
+        var lines = text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+        string currentPackage = null;
+        for (var i = 0; i < lines.Length; i++)
+        {
+            var line = lines[i].Trim();
+
+            var packageMatch = Regex.Match(line, packagePattern);
+            if (packageMatch.Success)
+            {
+                currentPackage = packageMatch.Groups[1].Value;
+            }
+
+            // Get built-in functions
+            var yailFunctions = typeof(YailBuiltInFunctions);
+            var fns = yailFunctions.GetProperties()
+                .Select(propertyInfo => yailFunctions.GetProperty(propertyInfo.Name)
+                    .GetValue(yailFunctions) as string)
+                .Select(val => val + ')')
+                .ToList();
+
+            var functionMatch = Regex.Match(line, functionCallPattern);
+            if (functionMatch.Success)
+            {
+                // if function == built-in -> continue
+                var matchedFunction = functionMatch.Groups[1].Value + ")";
+                
+                if (fns.Contains(matchedFunction)) continue;
+                
+                var modifiedFunction = Regex.Replace(
+                    line,
+                    @"([a-zA-Z_][a-zA-Z0-9_]*)\s*\(",
+                    $"{currentPackage}::$1("
+                );
+                lines[i] = modifiedFunction;
+            }
+        }
+
+        return string.Join(Environment.NewLine, lines);
     }
 }

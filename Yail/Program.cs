@@ -44,8 +44,13 @@ foreach (var file in files)
 }
 
 input = input
-    .RemoveComments()
+    .RemoveCommentedContent()
     .RemoveUsingStatements();
+    
+if (args.Any(x => x == "disable-explicit-function-calls"))
+{
+    input = input.FillThePackageBeforeFunctionCall();
+}
 
 var inputStream = new AntlrInputStream(input);
 
@@ -53,7 +58,7 @@ var lexer = new ExpressionsLexer(inputStream);
 var tokenStream = new CommonTokenStream(lexer);
 var parser = new ExpressionsParser(tokenStream);
 
-if (args.Length > 0 && args[1] == "enable-errors")
+if (args.Any(x => x == "enable-errors"))
 {
     parser.AddErrorListener(new YailErrorListener());
 }

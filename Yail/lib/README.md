@@ -1,3 +1,4 @@
 ﻿## Libraries for yail
 
-- using math
+- math
+- strlib

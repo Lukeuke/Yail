@@ -91,6 +91,8 @@ else {
 
 ### Functions
 
+> More about functions here: [Docs - functions](https://github.com/Lukeuke/Yail/docs/functions.md)
+
 ```js
 var x = 5;
 
