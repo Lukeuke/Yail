@@ -2,6 +2,17 @@
 
 public class ValueObj
 {
+    public ValueObj()
+    {
+        
+    }
+    public ValueObj(object? value, EDataType dataType, bool isConst = false)
+    {
+        Value = value;
+        DataType = dataType;
+        IsConst = isConst;
+    }
+    
     public bool IsConst { get; set; }
     public object? Value { get; set; }
     public EDataType DataType { get; set; }

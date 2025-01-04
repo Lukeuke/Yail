@@ -10,7 +10,7 @@ public static class ArrayAccessExtension
     /// <param name="value"></param>
     /// <param name="idx"></param>
     /// <returns>Char type</returns>
-    public static ValueObj StringType(ValueObj value, int idx)
+    public static ValueObj StringToChar(ValueObj value, int idx)
     {
         var data = value.Value as string;
 

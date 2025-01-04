@@ -67,6 +67,8 @@ public static class DataTypeHelper
                     return new ValueObj { IsConst = true, Value = intValue32, DataType = EDataType.Int32 };
                 if (val is double doubleValue32)
                     return new ValueObj { IsConst = true, Value = (int)doubleValue32, DataType = EDataType.Int32 };
+                if (val is char character)
+                    return new ValueObj { IsConst = true, Value = (int)character, DataType = EDataType.Int32 };
                 return null;
 
             case "i64":

@@ -28,6 +28,7 @@ accessLevels: 'pub';
 
 arrayLiteral: '[' (expression (',' expression)*)? ']' ;
 arrayAccessor: '[' (expression) ']';
+arrayLength: 'len' '(' expression ')';
 
 break: 'break';
 continue: 'continue';
@@ -39,12 +40,13 @@ expression
     | functionCall                           #functionCallExpr
     | '(' expression ')'                     #parenthesizedExpr
     | '!' expression                         #negationExpr
+    | expression arrayAccessor               #arrayIndexExpr // order is neccesarry
     | expression multiplyOp expression       #multiplyExpr
     | expression addOp expression            #addExpr
     | expression compareOp expression        #compareExpr
     | expression boolOp expression           #boolExpr
     | '(' DATA_TYPES ')' expression          #castExpr
-    | expression arrayAccessor               #arrayIndexExpr
+    | arrayLength                            #arrayLengthExpr
     ;
 
 packageDeclaration: 'package' IDENTIFIER;

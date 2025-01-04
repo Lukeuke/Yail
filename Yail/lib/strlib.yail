@@ -1,0 +1,22 @@
+﻿package strlib
+
+pub funky reverse(val string) string {
+    var output = "";
+    var n = len(val) - 1;
+    
+    for (var i = n; i >= 0; i--) {
+        output = output + val[i];
+    }
+    
+    return output;
+}
+
+pub funky substr(val string, from i32, count i32) string {
+    var output = "";
+    
+    for (var i = from; i < from + count; i++) {
+        output = output + val[i];
+    }
+    
+    return output;
+}

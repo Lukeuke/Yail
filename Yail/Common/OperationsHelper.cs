@@ -6,7 +6,7 @@ public static class OperationsHelper
 {
     public static ValueObj Add(ValueObj left, ValueObj right)
     {
-        if (left.DataType == EDataType.String || right.DataType == EDataType.String)
+        if (left.DataType == EDataType.String || right.DataType == EDataType.String || right.DataType == EDataType.Char)
         {
             // String concatenation
             return new ValueObj

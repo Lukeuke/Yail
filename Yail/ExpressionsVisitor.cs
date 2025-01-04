@@ -365,6 +365,23 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
                 Value = argument.Value!.ToString()
             };
         }
+        if (functionName == YailTokens.ToCharArray)
+        {
+            if (context.expression().Length != 1)
+            {
+                throw new InvalidOperationException("ToCharArray function requires exactly one argument.");
+            }
+
+            var argument = Visit(context.expression(0));
+            if (argument == null)
+            {
+                throw new InvalidOperationException("ToCharArray function requires a valid argument.");
+            }
+
+            var n = argument.Value!.ToString()!;
+            var arr = n.Select(x => new ValueObj(x, EDataType.Char)).ToList();
+            return new ArrayObj(arr);
+        }
         if (functionName == YailTokens.Typeof)
         {
             if (context.expression().Length != 1)
@@ -720,8 +737,9 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
 
     public override ValueObj? VisitPackageDeclaration(ExpressionsParser.PackageDeclarationContext context)
     {
-        _currentPackage = context.IDENTIFIER().GetText();
-        return base.VisitPackageDeclaration(context);
+        var kurwa = context.IDENTIFIER();
+        _currentPackage = kurwa.GetText() ?? "main";
+        return null;
     }
 
     public override ValueObj? VisitBoolExpr(ExpressionsParser.BoolExprContext context)
@@ -765,7 +783,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         
         if (accessedValue.DataType == EDataType.String)
         {
-            return ArrayAccessExtension.StringType(accessedValue, idx);
+            return ArrayAccessExtension.StringToChar(accessedValue, idx);
         }
 
         if (accessedValue.GetType() == typeof(ArrayObj))
@@ -792,6 +810,29 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
     {
         var values = context.expression().Select(expr => (ValueObj)Visit(expr)).ToList();
         return new ArrayObj(values);
+    }
+
+    public override ValueObj? VisitArrayLength(ExpressionsParser.ArrayLengthContext context)
+    {
+        var value = Visit(context.expression());
+
+        var output = new ValueObj(0, EDataType.Int32, true);
+
+        if (value.DataType == EDataType.String)
+        {
+            var str = value.Value as string;
+            output.Value = str!.Length;
+            return output;
+        }
+
+        if (value.GetType() == typeof(ArrayObj))
+        {
+            var arr = value as ArrayObj;
+            output.Value = arr!.Items.Count;
+            return output;
+        }
+
+        throw new Exception("len() function does not support that data type");
     }
 
     #endregion
