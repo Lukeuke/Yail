@@ -6,13 +6,5 @@ funky privateFn() void {
 
 pub funky publicFn() void {
   println("calling publicFn");
-  test::privateFn(); // specify the package
+  test::privateFn();
 }
-
-package main
-
-// this will throw an error, because of its protection level.
-//test::privateFn();
-
-// This is ok
-test::publicFn();

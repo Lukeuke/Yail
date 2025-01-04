@@ -154,13 +154,42 @@ println(x[-1]); // 0
 ```
 
 ### Libraries
-
+> <!> Package name must be equal to the file name: ```package main``` in ```main.yail```
 ```js
 using math // library import
 
 package main // necessary to define main package
 
 println(abs(-5)); // function inside imported package
+```
+
+#### External libraries
+> <!> Package name must be equal to the file name: ```package main``` in ```main.yail```
+
+> <!> Interpreter is getting path from the project root file.
+
+```
+├── main.yail
+├── src
+│   ├── test.yail
+```
+
+test.yail
+```js
+package test
+
+pub funky publicFn() void {
+  println("calling publicFn");
+}
+```
+
+main.yail
+```js
+using "./src/test.yail" // only windows support
+
+package main
+
+test::publicFn();
 ```
 
 ### Supports
