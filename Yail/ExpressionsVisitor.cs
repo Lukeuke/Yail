@@ -256,6 +256,11 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         return result;
     }
 
+    public override ValueObj? VisitParenthesizedExpr(ExpressionsParser.ParenthesizedExprContext context)
+    {
+        return Visit(context.expression());
+    }
+
     #region Functions
     
     public override ValueObj? VisitSimpleFunctionCall(ExpressionsParser.SimpleFunctionCallContext context)
@@ -554,6 +559,32 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         }
 
         return null;
+    }
+
+    public override ValueObj? VisitNegationExpr(ExpressionsParser.NegationExprContext context)
+    {
+        var val = Visit(context.expression());
+
+        var result =  new ValueObj
+        {
+            DataType = EDataType.Boolean,
+            IsConst = true,
+            Value = false
+        };
+        
+        if (val is null || val.Value.DataType == EDataType.Null)
+        {
+            result.Value = true;
+            return result;
+        }
+
+        if (val.Value.DataType == EDataType.Boolean)
+        {
+            result.Value = !(bool)val.Value.Value!;
+            return result;
+        }
+
+        return result;
     }
 
     private bool _shouldBreak;

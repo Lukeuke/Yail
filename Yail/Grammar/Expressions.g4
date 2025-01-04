@@ -34,7 +34,7 @@ expression
     | IDENTIFIER                             #identifierExpr
     | functionCall                           #functionCallExpr
     | '(' expression ')'                     #parenthesizedExpr
-    | '!' expression                         #negationExpr // TODO:
+    | '!' expression                         #negationExpr
     | expression multiplyOp expression       #multiplyExpr
     | expression addOp expression            #addExpr
     | expression compareOp expression        #compareExpr
@@ -69,4 +69,4 @@ elseIfBlock: block | ifBlock;
 
 whileBlock: WHILE expression block;
 
-classBlock: accessLevels? 'class' IDENTIFIER block;
+classBlock: accessLevels? 'class' IDENTIFIER block; // TODO: future

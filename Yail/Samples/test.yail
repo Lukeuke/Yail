@@ -1,15 +1,5 @@
 ﻿package main
 
-var i = 5;
-while i > 0 {
+var x = null;
 
-    if i is 2 {
-        println("continue");
-        i--;
-        continue;
-    }
-
-    println(i);
-
-    i--;
-}
+println(!(1 == 1));
