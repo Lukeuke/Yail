@@ -1,5 +1,7 @@
-﻿using "test.yail" // only windows support
+﻿package main
 
-package main
+var arr = "test";
 
-test::publicFn();
+foreach (var a in arr) {
+    println(a);
+}

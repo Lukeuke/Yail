@@ -806,6 +806,18 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         var collectionExpression = context.expression();
         
         var collection = Visit(collectionExpression);
+
+        if (collection.DataType is EDataType.String)
+        {
+            foreach (var item in collection.Value!.ToString())
+            {
+                AddOrAssignVariable(loopVarName, new ValueObj(item, EDataType.Char));
+                Visit(context.block());
+            }
+            
+            return null;
+        }
+        
         if (collection is not ArrayObj array)
         {
             throw new InvalidOperationException("You can only iterate on arrays.");
