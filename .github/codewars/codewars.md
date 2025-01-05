@@ -1,4 +1,8 @@
-﻿using math
+# Codewars problems solved using Yail
+
+- [Square(n) Sum](https://www.codewars.com/kata/515e271a311df0350d00000f/train/python) <8 kyu>
+```js
+using math
 
 package codewars
 
@@ -20,3 +24,4 @@ var arr3 = [-1, -2] i32;
 println(codewars::solve(arr));
 println(codewars::solve(arr2));
 println(codewars::solve(arr3));
+```

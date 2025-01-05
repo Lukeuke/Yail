@@ -1,6 +1,9 @@
 # Yail (Yet another interpreted language)
 Created out of pure fun. Not for real use.
 
+**Solving real coding problems**
+- [Codewars](https://github.com/Lukeuke/Yail/blob/main/.github/codewars/codewars.md)
+
 ## Conventions
 <!> **Package names must be equal to its file names**!
 
@@ -105,7 +108,7 @@ else {
 
 ### Functions
 
-> More about functions here: [Docs - functions](https://github.com/Lukeuke/Yail/docs/functions.md)
+> More about functions here: [Docs - functions](https://github.com/Lukeuke/Yail/blob/main/docs/functions.md)
 
 ```js
 var x = 5;
