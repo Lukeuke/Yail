@@ -37,4 +37,14 @@ public class ValueObj
     {
         return $"ValueObj {{ IsConst = {IsConst}, Value = {Value}, DataType = {DataType} }}";
     }
+
+    public virtual void Print(bool newLine = false)
+    {
+        var val = Value;
+
+        if (newLine)
+            val += Environment.NewLine;
+        
+        Console.Write(val);
+    }
 }

@@ -1,22 +1,20 @@
-﻿using math
+﻿package main
 
-package codewars
+var arr = [1, 2, 3] i32;
 
-pub funky solve(arr []i32) i32 {
-    var output = 0;
+var i = 0;
+while (i < len(arr)) {
+    var curr = arr[i];
+    print(curr);
     
-    foreach (var x in arr) {
-        output = output + math::pow(x, 2);
-    }
-    
-    return output;
+    i++;
 }
 
-package main
+for (var j = 0; j < len(arr); j++) {
+    var curr = arr[j];
+    print(curr);
+}
 
-var arr = [1, 2, 2] i32;
-var arr2 = [0, 3, 4, 5] i32;
-var arr3 = [-1, -2] i32;
-println(codewars::solve(arr));
-println(codewars::solve(arr2));
-println(codewars::solve(arr3));
+foreach (var k in arr) {
+    print(k);
+}

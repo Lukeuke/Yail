@@ -22,7 +22,14 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         var variableName = context.IDENTIFIER().GetText();
         var value = Visit(context.expression());
 
-        AddVariable(variableName, value);
+        if (_insideIterable)
+        {
+            AddOrAssignVariable(variableName, value);
+        }
+        else
+        {
+            AddVariable(variableName, value);
+        }
         
         return null;
     }
@@ -292,7 +299,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
                 var valueObj = Visit(exprContext);
                 if (valueObj != null)
                 {
-                    Console.Write(valueObj.Value);
+                    valueObj.Print();
                 }
             }
             return null;
@@ -304,7 +311,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
                 var valueObj = Visit(exprContext);
                 if (valueObj != null)
                 {
-                    Console.WriteLine(valueObj.Value);
+                    valueObj.Print(true);
                 }
             }
             return null;
@@ -733,8 +740,11 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
     
     private bool _shouldBreak;
     private bool _shouldContinue;
+    private bool _insideIterable;
+
     public override ValueObj? VisitWhileBlock(ExpressionsParser.WhileBlockContext context)
     {
+        _insideIterable = true;
         while (EvaluateCondition(context.expression()))
         {
             _shouldBreak = false;
@@ -755,6 +765,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
                 break;
         }
 
+        _insideIterable = false;
         return null;
     }
 
@@ -775,16 +786,18 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         {
             _shouldBreak = false;
             _shouldContinue = false;
-
-            // Do work on lines inside for-loop
-            Visit(context.block());
-
+            _insideIterable = true;
+            
+            // before doing work inside, check for break and continue conditions
             if (_shouldBreak)
                 break;
 
             if (_shouldContinue)
                 continue;
 
+            // Do work on lines inside for-loop
+            Visit(context.block());
+            
             // Increment/Update (executed at the end of each iteration)
             if (context.assignment() != null)
             {
@@ -796,37 +809,30 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             }
         }
 
+        _insideIterable = false;
         return null;
     }
 
     public override ValueObj? VisitForeachBlock(ExpressionsParser.ForeachBlockContext context)
     {
         var loopVarName = context.IDENTIFIER().GetText();
+        var collection = Visit(context.expression());
 
-        var collectionExpression = context.expression();
-        
-        var collection = Visit(collectionExpression);
+        if (collection is null)
+            throw new InvalidOperationException("Collection cannot be null.");
 
-        if (collection.DataType is EDataType.String)
+        switch (collection.DataType)
         {
-            foreach (var item in collection.Value!.ToString())
-            {
-                AddOrAssignVariable(loopVarName, new ValueObj(item, EDataType.Char));
-                Visit(context.block());
-            }
-            
-            return null;
-        }
-        
-        if (collection is not ArrayObj array)
-        {
-            throw new InvalidOperationException("You can only iterate on arrays.");
-        }
-        
-        foreach (var item in array.Items)
-        {
-            AddOrAssignVariable(loopVarName, item);
-            Visit(context.block());
+            case EDataType.String:
+                IterateOverString(loopVarName, collection.Value!.ToString(), context.block());
+                break;
+
+            case EDataType.Array when collection is ArrayObj array:
+                IterateOverArray(loopVarName, array, context.block());
+                break;
+
+            default:
+                throw new InvalidOperationException("You can only iterate over strings or arrays.");
         }
 
         return null;
@@ -834,23 +840,6 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
 
     #endregion
     
-    private bool EvaluateCondition(ExpressionsParser.ExpressionContext conditionContext)
-    {
-        var conditionResult = Visit(conditionContext);
-
-        if (conditionResult is null)
-        {
-            return false;
-        }
-        
-        if (conditionResult is null || conditionResult.DataType != EDataType.Boolean)
-        {
-            throw new InvalidOperationException("Condition in must evaluate to a boolean value.");
-        }
-
-        return (bool)conditionResult.Value!;
-    }
-
     public override ValueObj? VisitReturn(ExpressionsParser.ReturnContext context)
     {
         var returnValue = Visit(context.expression());
@@ -882,8 +871,8 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
 
     public override ValueObj? VisitPackageDeclaration(ExpressionsParser.PackageDeclarationContext context)
     {
-        var kurwa = context.IDENTIFIER();
-        _currentPackage = kurwa.GetText() ?? "main";
+        var identifier = context.IDENTIFIER();
+        _currentPackage = identifier.GetText() ?? "main";
         return null;
     }
 
@@ -973,7 +962,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         if (value.GetType() == typeof(ArrayObj))
         {
             var arr = value as ArrayObj;
-            output.Value = arr!.Items.Count;
+            output.Value = arr!.Get().Count;
             return output;
         }
 
@@ -982,6 +971,30 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
 
     #endregion
 
+    #region Helpers
+
+    private bool EvaluateCondition(ExpressionsParser.ExpressionContext conditionContext)
+    {
+        var conditionResult = Visit(conditionContext);
+
+        if (conditionResult is null)
+        {
+            return false;
+        }
+
+        if (_shouldBreak)
+        {
+            return false;
+        }
+        
+        if (conditionResult is null || conditionResult.DataType != EDataType.Boolean)
+        {
+            throw new InvalidOperationException("Condition in must evaluate to a boolean value.");
+        }
+
+        return (bool)conditionResult.Value!;
+    }
+    
     private void AddVariable(string name, ValueObj value)
     {
         if (_variables.TryGetValue(name, out _))
@@ -1015,4 +1028,32 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
     {
         return _functions.TryAdd($"{package}::{name}", function);
     }
+    
+    private void IterateOverString(string loopVarName, string str, ExpressionsParser.BlockContext block)
+    {
+        _insideIterable = true;
+        
+        foreach (var item in str)
+        {
+            AddOrAssignVariable(loopVarName, new ValueObj(item, EDataType.Char));
+            Visit(block);
+        }
+        
+        _insideIterable = false;
+    }
+    
+    private void IterateOverArray(string loopVarName, ArrayObj array, ExpressionsParser.BlockContext block)
+    {
+        _insideIterable = true;
+
+        foreach (var item in array.Get())
+        {
+            AddOrAssignVariable(loopVarName, item);
+            Visit(block);
+        }
+
+        _insideIterable = false;
+    }
+
+    #endregion
 }
