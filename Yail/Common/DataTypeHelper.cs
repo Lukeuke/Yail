@@ -6,6 +6,13 @@ public static class DataTypeHelper
 {
     public static EDataType ToDataType(this string val)
     {
+        var isArr = val.StartsWith("[]");
+
+        if (isArr)
+        {
+            val = "[]";
+        }
+        
         var dict = new Dictionary<string, EDataType>
         {
             { "i32", EDataType.Int32 },
@@ -16,6 +23,7 @@ public static class DataTypeHelper
             { "null", EDataType.Null },
             { "any", EDataType.Any },
             { "void", EDataType.Void },
+            { "[]", EDataType.Array }
         };
 
         if (!dict.TryGetValue(val, out var result))

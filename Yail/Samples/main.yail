@@ -1,7 +1,18 @@
-﻿package main
+﻿using math
 
-var arr = "test";
+package codewars
 
-foreach (var a in arr) {
-    println(a);
+pub funky solve(arr []i32) i32 {
+    var output = 0;
+    
+    foreach (var x in arr) {
+        output = output + math::pow(x, 2);
+    }
+    
+    return output;
 }
+
+package main
+
+var arr = [1, 2, 2] i32;
+println(codewars::solve(arr));
