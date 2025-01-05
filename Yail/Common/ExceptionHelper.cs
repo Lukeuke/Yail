@@ -17,6 +17,6 @@ public static class ExceptionHelper
         Console.ForegroundColor = ConsoleColor.Red;
         Console.Error.WriteLine(message);
         Console.ResetColor();
-        Environment.Exit(0);
+        Environment.Exit(-1);
     }
 }

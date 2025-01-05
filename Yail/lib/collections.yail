@@ -1,0 +1,56 @@
+﻿package collections
+
+// quickSort()[arr.count() - 1];
+pub funky max(arr []any) any {
+   var maxIdx = 0;
+   
+   for (var i = 0; i < arr.count(); i++) {
+        var curr = arr[i];
+        
+        if (curr > arr[maxIdx]) {
+            maxIdx = i;
+        }
+   }
+   
+   return arr[maxIdx];
+}
+
+// quickSort()[0]
+pub funky min(arr []any) any {
+   var min = 0;
+   
+   for (var i = 0; i < arr.count(); i++) {
+        var curr = arr[i];
+        
+        if (curr < arr[min]) {
+            min = i;
+        }
+   }
+   
+   return arr[min];
+}
+
+// bubble sort for now
+pub funky sort(arr []any) void { 
+    for (var i = 0; i < arr.count(); i++) {
+        for (var j = 0; j < arr.count() - i - 1; j++) {
+            var curr = arr[j];
+            var next = arr[j + 1];
+            if (curr > next) {
+                arr[j] = next;
+                arr[j + 1] = curr;
+            }
+        }
+    }
+}
+
+pub funky reverse(val []any) []any {
+    var output = [] any;
+    var n = val.count() - 1;
+    
+    for (var i = n; i >= 0; i--) {
+        output.push(val[i]);
+    }
+    
+    return output;
+}

@@ -654,6 +654,22 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         return null;
     }
 
+    public override ValueObj? VisitMethodCall(ExpressionsParser.MethodCallContext context)
+    {
+        var objectName = context.IDENTIFIER(0).GetText();
+        var methodName = context.IDENTIFIER(1).GetText();
+
+        if (!_variables.TryGetValue(objectName, out var obj))
+            throw new InvalidOperationException($"Object '{objectName}' is not defined.");
+
+        if (obj is ArrayObj array)
+        {
+            return HandleArrayMethod(array, methodName, context.expression());
+        }
+
+        throw new InvalidOperationException($"'{methodName}' is not a valid method for type '{obj.DataType}'.");
+    }
+    
     #endregion
 
     public override ValueObj? VisitUsingDirective(ExpressionsParser.UsingDirectiveContext context)
@@ -1055,5 +1071,38 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         _insideIterable = false;
     }
 
+    private ValueObj? HandleArrayMethod(ArrayObj array, string methodName, IList<ExpressionsParser.ExpressionContext> arguments)
+    {
+        switch (methodName)
+        {
+            case "push":
+                if (arguments.Count != 1)
+                    throw new ArgumentException("push() requires exactly 1 argument.");
+                var valueToPush = Visit(arguments[0]);
+                array.Push(valueToPush);
+                return null;
+
+            case "pop":
+                if (arguments.Count != 0)
+                    throw new ArgumentException("pop() requires no arguments.");
+                return array.Pop();
+
+            case "removeAt":
+                if (arguments.Count != 1)
+                    throw new ArgumentException("removeAt() requires exactly 1 argument.");
+                var idx = Visit(arguments[0]);
+                array.RemoveAt((int)idx.Value);
+                return null;
+            
+            case "count":
+                if (arguments.Count != 0)
+                    throw new ArgumentException("count() requires no arguments.");
+                return new ValueObj(array.Items.Count, EDataType.Int32, true);
+                
+            default:
+                throw new InvalidOperationException($"Unknown method '{methodName}' for arrays.");
+        }
+    }
+    
     #endregion
 }

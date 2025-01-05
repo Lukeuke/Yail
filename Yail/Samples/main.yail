@@ -1,20 +1,13 @@
-﻿package main
+﻿using collections
 
-var arr = [1, 2, 3] i32;
+package main
 
-var i = 0;
-while (i < len(arr)) {
-    var curr = arr[i];
-    print(curr);
-    
-    i++;
-}
+var arr = [2,5,1] any;
 
-for (var j = 0; j < len(arr); j++) {
-    var curr = arr[j];
-    print(curr);
-}
+collections::sort(arr);
+var max = collections::max(arr);
+var min = collections::min(arr);
 
-foreach (var k in arr) {
-    print(k);
-}
+println(arr);
+println(max);
+println(min);

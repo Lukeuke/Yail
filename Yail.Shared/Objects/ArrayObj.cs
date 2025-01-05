@@ -2,6 +2,8 @@
 
 public class ArrayObj : ValueObj
 {
+    public List<ValueObj> Items => Value as List<ValueObj>;
+    
     public ArrayObj(List<ValueObj> items)
     {
         Value = items;
@@ -10,30 +12,42 @@ public class ArrayObj : ValueObj
 
     public ValueObj Get(int index)
     {
-        var items = Value as List<ValueObj>;
         if (index < 0)
         {
-            index = items.Count + index;
+            index = Items.Count + index;
         }
-        return items[index];
+        return Items[index];
     }
 
+    public void Push(ValueObj value)
+    {
+        Items.Add(value);
+    }
+
+    public ValueObj Pop()
+    {
+        if (Items.Count == 0)
+            throw new InvalidOperationException("Cannot pop from an empty array.");
+
+        var lastItem = Items[^1];
+        Items.RemoveAt(Items.Count - 1);
+        return lastItem;
+    }
+    
     public List<ValueObj> Get()
     {
-        return Value as List<ValueObj>;
+        return Items;
     }
     
     public void Set(int index, ValueObj value)
     {
-        var items = Value as List<ValueObj>;
-
         if (index < 0)
         {
-            index = items.Count + index;
+            index = Items.Count + index;
         }
         
-        if (index >= 0 && index < items.Count)
-            items[index] = value;
+        if (index >= 0 && index < Items.Count)
+            Items[index] = value;
     }
 
     public override void Print(bool newLine = false)
@@ -45,5 +59,10 @@ public class ArrayObj : ValueObj
             output += Environment.NewLine;
         
         Console.Write(output);
+    }
+
+    public void RemoveAt(int idxValue)
+    {
+        Items.RemoveAt(idxValue);
     }
 }

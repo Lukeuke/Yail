@@ -69,6 +69,7 @@ selfOperation: ('++'|'--'|'**'|'//')? IDENTIFIER ('++'|'--'|'**'|'//')?;
 functionCall
     : IDENTIFIER '(' (expression (',' expression)*)? ')'                    # simpleFunctionCall
     | IDENTIFIER '::' IDENTIFIER '(' (expression (',' expression)*)? ')'    # namespacedFunctionCall
+    | IDENTIFIER '.' IDENTIFIER '(' (expression (',' expression)*)? ')'     # methodCall
     ;
 
 statement: (variableDeclaration | arrayDeclaration | assignment | operationAssignment | selfOperation | functionCall | break | continue | return) ';';

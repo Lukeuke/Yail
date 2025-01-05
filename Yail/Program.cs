@@ -66,7 +66,7 @@ parser.AddErrorListener(new YailErrorListener());
 var tree = parser.program();
 
 #if DEBUG
-Console.WriteLine(tree.ToStringTree(parser)); 
+//Console.WriteLine(tree.ToStringTree(parser)); 
 #endif
 
 var visitor = new ExpressionsVisitor();
