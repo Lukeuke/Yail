@@ -1,4 +1,5 @@
-﻿using Yail.Shared.Abstract;
+﻿using Newtonsoft.Json;
+using Yail.Shared.Abstract;
 using Yail.Shared.Helpers;
 
 namespace Yail.Shared.Objects;
@@ -28,5 +29,15 @@ public class DictionaryObj : ValueObj, IAccessible
         }
 
         _dict[key] = value;
+    }
+
+    public override string ToString()
+    {
+        return JsonConvert.SerializeObject(_dict);
+    }
+
+    public override void Print(bool newLine = false)
+    {
+        base.Print(newLine);
     }
 }

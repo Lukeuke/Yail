@@ -13,6 +13,7 @@ NULL: 'null';
 WS: [ \t\r\n]+ -> skip;
 DATA_TYPES: ('[' ']'DATA_TYPES) | 'i16' | 'i32' | 'i64' | 'string' | 'bool' | 'char' | 'double' | 'any' | 'void' | '{}';
 IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;
+REFERENCE: '&';
 USE_IDENTIFIERS: 'disable-type-checking';
 
 // grammar
@@ -46,7 +47,7 @@ expression
     | '(' expression ')'                     #parenthesizedExpr
     | '!' expression                         #negationExpr
     | expression arrayAccessor               #arrayIndexExpr // order is neccesarry
-    | arrayLiteral DATA_TYPES                #arrayLiteralExpr // array literal -> []
+    | arrayLiteral DATA_TYPES                #arrayLiteralExpr // array literal -> [] any
     | expression multiplyOp expression       #multiplyExpr
     | expression addOp expression            #addExpr
     | expression compareOp expression        #compareExpr
@@ -59,7 +60,7 @@ expression
 packageDeclaration: 'package' IDENTIFIER;
 usingDirective: 'using' IDENTIFIER;
 
-variableDeclaration: 'var' IDENTIFIER '=' expression;
+variableDeclaration: 'var' IDENTIFIER '=' REFERENCE? expression;
 functionDeclaration: (accessLevels)? 'funky' IDENTIFIER '(' (parameterList)? ')' DATA_TYPES block;
 
 parameterList: parameter (',' parameter)*;

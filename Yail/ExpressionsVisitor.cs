@@ -1,4 +1,5 @@
-﻿using Yail.Common;
+﻿using System.Net.Http.Headers;
+using Yail.Common;
 using Yail.Common.Extentions;
 using Yail.Grammar;
 using Yail.Shared;
@@ -18,9 +19,12 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
     private readonly HashSet<string> _usings = new();
     private string _currentPackage = "main";
     private Stack<FunctionDefinition> _callStack = new();
+
+    private bool isReference;
     
     public override ValueObj? VisitVariableDeclaration(ExpressionsParser.VariableDeclarationContext context)
     {
+        isReference = context.REFERENCE() is not null;
         var variableName = context.IDENTIFIER().GetText();
         var value = Visit(context.expression());
 
@@ -65,12 +69,14 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
                 
                 accessible.Set(index, value);
                 _variables[variableName] = prevVal;
+
+                ReferenceExtension.UpdateTheReferenceVariables(accessible, _variables);
+                
+                return accessible.Get(index);
             }
-            else
-            {
-                _variables[variableName] = value;
-            }
-            
+
+            _variables[variableName] = value;
+
             return null;
         }
         
@@ -933,17 +939,22 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         var accessedValue = (ValueObj)Visit(context.expression());
         var indexValue = (ValueObj)Visit(context.arrayAccessor().expression());
 
-        if (accessedValue.GetType() != typeof(DictionaryObj))
+        if (accessedValue.DataType == EDataType.String)
         {
-            return AccessArrayValue(indexValue, accessedValue);
+            return SquareBracketAccessExtension.AccessString(indexValue, accessedValue, isReference);
+        }
+        
+        if (accessedValue.GetType() == typeof(ArrayObj))
+        {
+            return SquareBracketAccessExtension.AccessArrayValue(indexValue, (ArrayObj)accessedValue, isReference);
         }
 
         if (accessedValue.GetType() == typeof(DictionaryObj))
         {
-            return AccessDictionaryValue(indexValue, (DictionaryObj)accessedValue);
+            return SquareBracketAccessExtension.AccessDictionaryValue(indexValue, (DictionaryObj)accessedValue, isReference);
         }
         
-        throw new Exception("Cannot use indexer on non-iterable data types.");
+        throw new Exception($"Index accessor cannot be used on {accessedValue.DataType.ToString()}.");
     }
 
     public override ValueObj? VisitArrayLiteralExpr(ExpressionsParser.ArrayLiteralExprContext context)
@@ -1129,37 +1140,5 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         }
     }
 
-    private ValueObj AccessArrayValue(ValueObj indexValue, ValueObj accessedValue)
-    {
-        if (indexValue.DataType != EDataType.Int32)
-        {
-            throw new Exception("Value must be i32");
-        }
-
-        var idx = indexValue.Value is int value ? value : 0;
-        
-        if (accessedValue.DataType == EDataType.String)
-        {
-            return ArrayAccessExtension.StringToChar(accessedValue, idx);
-        }
-
-        if (accessedValue.GetType() == typeof(ArrayObj))
-        {
-            return ((ArrayObj)accessedValue).Get(idx);
-        }
-
-        throw new Exception("Wrong data type.");
-    }
-
-    private ValueObj AccessDictionaryValue(ValueObj indexValue, DictionaryObj dictionary)
-    {
-        if (indexValue.DataType != EDataType.String)
-        {
-            throw new Exception("Key value must be a string.");
-        }
-
-        return dictionary.Get((string)indexValue.Value!);
-    }
-    
     #endregion
 }

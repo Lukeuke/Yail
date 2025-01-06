@@ -170,6 +170,48 @@ x[-1] = 0;
 println(x[-1]); // 0
 ```
 
+### Dictionaries
+```js
+package main
+
+var dict = {"key1": 1, "key2": 2};
+var x = dict["key1"];
+
+println(x); // 1
+dict["key1"] = 2;
+print(dict["key1"]); // 2
+```
+
+
+### Reference types
+Reference works kinda like in C, declare it by '&amp;' 
+
+> <!> Reference works only on ***IAccessible*** types (Arrays, Dictionaries)
+
+```js
+package main
+
+var dict = {"key1": 1, "key2": 2};
+
+var x = dict["key1"];
+
+println(x); // 1
+
+dict["key1"] = 2;
+
+println(x); // 1
+
+// to fix, you need to tell that is a reference
+
+var x1 = &dict["key1"]; // <-
+
+println(x1); // 2
+
+dict["key1"] = 3;
+
+println(x1); // 3
+```
+
 ### Libraries
 > <!> Package name must be equal to the file name: ```package main``` in ```main.yail```
 ```js
