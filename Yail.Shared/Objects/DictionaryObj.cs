@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text;
+using Newtonsoft.Json;
 using Yail.Shared.Abstract;
 using Yail.Shared.Helpers;
 
@@ -38,6 +39,19 @@ public class DictionaryObj : ValueObj, IAccessible
 
     public override void Print(bool newLine = false)
     {
-        base.Print(newLine);
+        var sb = new List<string>();
+        foreach (var (key, value) in _dict)
+        {
+            sb.Add($"\"{key}\" = {value.Value}");
+        }
+
+        var output = "{";
+        output += string.Join(", ", sb);
+        output += "}";
+        
+        if (newLine)
+            output += Environment.NewLine;
+        
+        Console.Write(output);
     }
 }
