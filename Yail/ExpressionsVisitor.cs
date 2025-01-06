@@ -2,7 +2,9 @@
 using Yail.Common.Extentions;
 using Yail.Grammar;
 using Yail.Shared;
+using Yail.Shared.Abstract;
 using Yail.Shared.Constants;
+using Yail.Shared.Helpers;
 using Yail.Shared.Objects;
 
 namespace Yail;
@@ -52,18 +54,16 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             Environment.Exit(1);
         }
 
-        if (prevVal.GetType() == typeof(ArrayObj))
+        if (prevVal is IAccessible accessible)
         {
             var arrayAccessor = context.arrayAccessor();
 
             // if is not null then its this x[]; otherwise is just simple assigment
             if (arrayAccessor is not null)
             {
-                var idxVal = Visit(arrayAccessor.expression());
-
-                var idx = (int)idxVal.Value;
+                var index = Visit(arrayAccessor.expression()).Value;
                 
-                ((ArrayObj)prevVal).Set(idx, value);
+                accessible.Set(index, value);
                 _variables[variableName] = prevVal;
             }
             else
@@ -80,11 +80,9 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             return null;
         }
         
-        if (prevVal!.DataType != value.DataType)
+        if (prevVal.DataType != value.DataType)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.Error.WriteLine($"Variable '${variableName}' type does not match.");
-            Environment.Exit(1);
+            ExceptionHelper.PrintError($"Variable '${variableName}' type does not match.");
         }
         
         _variables[variableName] = value;
@@ -935,21 +933,14 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         var accessedValue = (ValueObj)Visit(context.expression());
         var indexValue = (ValueObj)Visit(context.arrayAccessor().expression());
 
-        if (indexValue.DataType != EDataType.Int32)
+        if (accessedValue.GetType() != typeof(DictionaryObj))
         {
-            throw new Exception("Value must be i32");
+            return AccessArrayValue(indexValue, accessedValue);
         }
 
-        var idx = indexValue.Value is int value ? value : 0;
-        
-        if (accessedValue.DataType == EDataType.String)
+        if (accessedValue.GetType() == typeof(DictionaryObj))
         {
-            return ArrayAccessExtension.StringToChar(accessedValue, idx);
-        }
-
-        if (accessedValue.GetType() == typeof(ArrayObj))
-        {
-            return ((ArrayObj)accessedValue).Get(idx);
+            return AccessDictionaryValue(indexValue, (DictionaryObj)accessedValue);
         }
         
         throw new Exception("Cannot use indexer on non-iterable data types.");
@@ -988,6 +979,35 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         }
 
         throw new Exception("len() function does not support that data type");
+    }
+
+    #endregion
+
+    #region Dictionaries
+
+    public override ValueObj VisitDictionaryEntry(ExpressionsParser.DictionaryEntryContext context)
+    {
+        var value = Visit(context.expression());
+        var key = context.STRING().GetText()[1.. ^1];
+
+        return new KeyValuePairObj(key, value);
+    }
+
+    public override ValueObj VisitDictionaryLiteral(ExpressionsParser.DictionaryLiteralContext context)
+    {
+        var dict = new Dictionary<string, ValueObj>();
+        
+        foreach (var entry in context.dictionaryEntry())
+        {
+            var kvp = Visit(entry) as KeyValuePairObj;
+            
+            if (!dict.TryAdd(kvp.Key, kvp.Value as ValueObj))
+            {
+                throw new ArgumentException($"Cannot add '{kvp.Key}' key to the dictionary.");
+            }
+        }
+        
+        return new DictionaryObj(dict);
     }
 
     #endregion
@@ -1107,6 +1127,38 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             default:
                 throw new InvalidOperationException($"Unknown method '{methodName}' for arrays.");
         }
+    }
+
+    private ValueObj AccessArrayValue(ValueObj indexValue, ValueObj accessedValue)
+    {
+        if (indexValue.DataType != EDataType.Int32)
+        {
+            throw new Exception("Value must be i32");
+        }
+
+        var idx = indexValue.Value is int value ? value : 0;
+        
+        if (accessedValue.DataType == EDataType.String)
+        {
+            return ArrayAccessExtension.StringToChar(accessedValue, idx);
+        }
+
+        if (accessedValue.GetType() == typeof(ArrayObj))
+        {
+            return ((ArrayObj)accessedValue).Get(idx);
+        }
+
+        throw new Exception("Wrong data type.");
+    }
+
+    private ValueObj AccessDictionaryValue(ValueObj indexValue, DictionaryObj dictionary)
+    {
+        if (indexValue.DataType != EDataType.String)
+        {
+            throw new Exception("Key value must be a string.");
+        }
+
+        return dictionary.Get((string)indexValue.Value!);
     }
     
     #endregion

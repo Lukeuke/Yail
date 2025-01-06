@@ -11,5 +11,6 @@ public enum EDataType
     String,
     Double,
     Array,
+    Dictionary,
     Class
 }

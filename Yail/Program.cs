@@ -3,6 +3,7 @@ using Yail;
 using Yail.Common;
 using Yail.Core;
 using Yail.Grammar;
+using Yail.Shared.Helpers;
 
 #if DEBUG
 var filePath = """C:\Users\Luuqe\RiderProjects\yail\Yail\Samples\main.yail""";

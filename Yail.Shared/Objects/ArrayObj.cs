@@ -1,6 +1,8 @@
-﻿namespace Yail.Shared.Objects;
+﻿using Yail.Shared.Abstract;
 
-public class ArrayObj : ValueObj
+namespace Yail.Shared.Objects;
+
+public class ArrayObj : ValueObj, IAccessible
 {
     public List<ValueObj> Items => Value as List<ValueObj>;
     
@@ -10,13 +12,15 @@ public class ArrayObj : ValueObj
         DataType = EDataType.Array;
     }
 
-    public ValueObj Get(int index)
+    public ValueObj Get(object index)
     {
-        if (index < 0)
+        var idx = (int)index;
+        
+        if (idx < 0)
         {
-            index = Items.Count + index;
+            idx = Items.Count + idx;
         }
-        return Items[index];
+        return Items[idx];
     }
 
     public void Push(ValueObj value)
@@ -38,18 +42,20 @@ public class ArrayObj : ValueObj
     {
         return Items;
     }
-    
-    public void Set(int index, ValueObj value)
-    {
-        if (index < 0)
-        {
-            index = Items.Count + index;
-        }
-        
-        if (index >= 0 && index < Items.Count)
-            Items[index] = value;
-    }
 
+    public void Set(object index, ValueObj value)
+    {
+        var idx = (int)index;
+        
+        if (idx < 0)
+        {
+            idx = Items.Count + idx;
+        }
+
+        if (idx >= 0 && idx < Items.Count)
+            Items[idx] = value;
+    }
+    
     public override void Print(bool newLine = false)
     {
         var x = Get().Select(x => x.Value.ToString()).ToArray();

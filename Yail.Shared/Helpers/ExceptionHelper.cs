@@ -1,6 +1,4 @@
-﻿using Yail.Shared;
-
-namespace Yail.Common;
+﻿namespace Yail.Shared.Helpers;
 
 public static class ExceptionHelper
 {
@@ -15,6 +13,7 @@ public static class ExceptionHelper
     public static void PrintError(string message)
     {
         Console.ForegroundColor = ConsoleColor.Red;
+        Console.Error.Write(Environment.NewLine);
         Console.Error.WriteLine(message);
         Console.ResetColor();
         Environment.Exit(-1);

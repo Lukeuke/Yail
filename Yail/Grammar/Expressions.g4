@@ -11,7 +11,7 @@ BOOL: 'true' | 'false';
 CHAR: '\'' . '\'';
 NULL: 'null';
 WS: [ \t\r\n]+ -> skip;
-DATA_TYPES: ('[' ']'DATA_TYPES) | 'i16' | 'i32' | 'i64' | 'string' | 'bool' | 'char' | 'double' | 'any' | 'void';
+DATA_TYPES: ('[' ']'DATA_TYPES) | 'i16' | 'i32' | 'i64' | 'string' | 'bool' | 'char' | 'double' | 'any' | 'void' | '{}';
 IDENTIFIER: [a-zA-Z_][a-zA-Z0-9_]*;
 USE_IDENTIFIERS: 'disable-type-checking';
 
@@ -29,6 +29,10 @@ accessLevels: 'pub';
 
 arrayLiteral: '[' (expression (',' expression)*)? ']' ;
 arrayAccessor: '[' (expression) ']';
+
+dictionaryEntry: (STRING/* | IDENTIFIER | INTEGER*/) ':' expression;
+dictionaryLiteral: '{' (dictionaryEntry (',' dictionaryEntry)*)? '}';
+
 arrayLength: 'len' '(' expression ')';
 
 break: 'break';
@@ -41,14 +45,15 @@ expression
     | functionCall                           #functionCallExpr
     | '(' expression ')'                     #parenthesizedExpr
     | '!' expression                         #negationExpr
-    | arrayLiteral DATA_TYPES                #arrayLiteralExpr
     | expression arrayAccessor               #arrayIndexExpr // order is neccesarry
+    | arrayLiteral DATA_TYPES                #arrayLiteralExpr // array literal -> []
     | expression multiplyOp expression       #multiplyExpr
     | expression addOp expression            #addExpr
     | expression compareOp expression        #compareExpr
     | expression boolOp expression           #boolExpr
     | '(' DATA_TYPES ')' expression          #castExpr
     | arrayLength                            #arrayLengthExpr
+    | dictionaryLiteral                      #dictionaryLiteralExpr // x = {}
     ;
 
 packageDeclaration: 'package' IDENTIFIER;

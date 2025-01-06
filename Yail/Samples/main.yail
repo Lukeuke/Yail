@@ -1,13 +1,13 @@
-﻿using collections
+﻿package main
 
-package main
+var dict = {"key1": "value1", "key2": 42};
 
-var x = [1,2,3] i32;
+var x = dict["key1"];
 
-x[0] = 2;
+print(x);
 
-println(x);
+dict["key1"] = "newValue";
 
-x = [2,1,3] i32;
-
+// TODO: make that this will be a reference to avoid doing things like this
+x = dict["key1"];
 print(x);
