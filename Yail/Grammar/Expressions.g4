@@ -41,6 +41,7 @@ expression
     | functionCall                           #functionCallExpr
     | '(' expression ')'                     #parenthesizedExpr
     | '!' expression                         #negationExpr
+    | arrayLiteral DATA_TYPES                #arrayLiteralExpr
     | expression arrayAccessor               #arrayIndexExpr // order is neccesarry
     | expression multiplyOp expression       #multiplyExpr
     | expression addOp expression            #addExpr
@@ -55,7 +56,6 @@ usingDirective: 'using' IDENTIFIER;
 
 variableDeclaration: 'var' IDENTIFIER '=' expression;
 functionDeclaration: (accessLevels)? 'funky' IDENTIFIER '(' (parameterList)? ')' DATA_TYPES block;
-arrayDeclaration: 'var' IDENTIFIER '=' arrayLiteral DATA_TYPES;
 
 parameterList: parameter (',' parameter)*;
 parameter: IDENTIFIER DATA_TYPES;
@@ -72,7 +72,7 @@ functionCall
     | IDENTIFIER '.' IDENTIFIER '(' (expression (',' expression)*)? ')'     # methodCall
     ;
 
-statement: (variableDeclaration | arrayDeclaration | assignment | operationAssignment | selfOperation | functionCall | break | continue | return) ';';
+statement: (variableDeclaration | assignment | operationAssignment | selfOperation | functionCall | break | continue | return) ';';
 
 // Blocks
 ifBlock: 'if' '('? expression ')'? block ('else' elseIfBlock)?;

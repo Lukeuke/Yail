@@ -54,12 +54,23 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
 
         if (prevVal.GetType() == typeof(ArrayObj))
         {
-            var idxVal = Visit(context.arrayAccessor().expression());
+            var arrayAccessor = context.arrayAccessor();
 
-            var idx = (int)idxVal.Value;
+            // if is not null then its this x[]; otherwise is just simple assigment
+            if (arrayAccessor is not null)
+            {
+                var idxVal = Visit(arrayAccessor.expression());
+
+                var idx = (int)idxVal.Value;
+                
+                ((ArrayObj)prevVal).Set(idx, value);
+                _variables[variableName] = prevVal;
+            }
+            else
+            {
+                _variables[variableName] = value;
+            }
             
-            ((ArrayObj)prevVal).Set(idx, value);
-            _variables[variableName] = prevVal;
             return null;
         }
         
@@ -944,16 +955,10 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         throw new Exception("Cannot use indexer on non-iterable data types.");
     }
 
-    public override ValueObj? VisitArrayDeclaration(ExpressionsParser.ArrayDeclarationContext context)
+    public override ValueObj? VisitArrayLiteralExpr(ExpressionsParser.ArrayLiteralExprContext context)
     {
         var array = Visit(context.arrayLiteral()) as ArrayObj;
-        var variableName = context.IDENTIFIER().GetText();
-
-        array.ThrowIfNull();
-        
-        AddVariable(variableName, array);
-        
-        return null;
+        return array;
     }
 
     public override ValueObj? VisitArrayLiteral(ExpressionsParser.ArrayLiteralContext context)
