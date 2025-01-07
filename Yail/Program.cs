@@ -6,7 +6,7 @@ using Yail.Grammar;
 using Yail.Shared.Helpers;
 
 #if DEBUG
-var filePath = """C:\Users\Luuqe\RiderProjects\yail\Yail\Samples\main.yail""";
+var filePath = """Samples\main.yail""";
 var input = File.ReadAllText(filePath);
 Console.ForegroundColor = ConsoleColor.Yellow;
 Console.WriteLine("[Debug mode]");
