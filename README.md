@@ -251,6 +251,22 @@ package main
 test::publicFn();
 ```
 
+### Structs
+```js
+package main
+
+pub struct Point {
+    var x i32;
+    var y i32;
+}
+
+var p = new Point();
+p.x = 2;
+p.y = 2;
+
+print(p.x); // 2
+```
+
 ### Supports
 
 - [x] Int, bool, char, string, double, null

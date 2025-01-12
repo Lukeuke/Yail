@@ -18,8 +18,12 @@ USE_IDENTIFIERS: 'disable-type-checking';
 
 // grammar
 program: line* EOF;
-line:  packageDeclaration | usingDirective | classBlock | directive | statement | ifBlock | whileBlock | forBlock | foreachBlock | functionDeclaration | return;
-block: '{' line* '}'; 
+line:  packageDeclaration | usingDirective | structBlock | directive | statement | ifBlock | whileBlock | forBlock | foreachBlock | functionDeclaration | return;
+block: '{' line* '}';
+
+structBody: '{' structLine* '}';
+structLine: variableDefine ';'; 
+
 directive: '#' 'use' USE_IDENTIFIERS;
 
 multiplyOp: '*' | '/' | '%';
@@ -55,12 +59,15 @@ expression
     | '(' DATA_TYPES ')' expression          #castExpr
     | arrayLength                            #arrayLengthExpr
     | dictionaryLiteral                      #dictionaryLiteralExpr // x = {}
+    | instanceCreate                         #instanceCreateExpr
+    | instancePropCall                       #instancePropCallExpr
     ;
 
 packageDeclaration: 'package' IDENTIFIER;
 usingDirective: 'using' IDENTIFIER;
 
 variableDeclaration: 'var' IDENTIFIER '=' REFERENCE? expression;
+variableDefine: 'var' IDENTIFIER DATA_TYPES;
 functionDeclaration: (accessLevels)? 'funky' IDENTIFIER '(' (parameterList)? ')' DATA_TYPES block;
 
 parameterList: parameter (',' parameter)*;
@@ -78,7 +85,7 @@ functionCall
     | IDENTIFIER '.' IDENTIFIER '(' (expression (',' expression)*)? ')'     # methodCall
     ;
 
-statement: (variableDeclaration | assignment | operationAssignment | selfOperation | functionCall | break | continue | return) ';';
+statement: (variableDeclaration | assignment | operationAssignment | selfOperation | functionCall | instancePropAssign | break | continue | return) ';';
 
 // Blocks
 ifBlock: 'if' '('? expression ')'? block ('else' elseIfBlock)?;
@@ -88,4 +95,8 @@ whileBlock: WHILE '('? expression ')'? block;
 forBlock: FOR '('? (variableDeclaration | assignment)? ';' expression? ';' (selfOperation)? ')'? block;
 foreachBlock: FOREACH '(' 'var' IDENTIFIER 'in' expression ')' block;
 
-classBlock: accessLevels? 'class' IDENTIFIER block; // TODO: future
+structBlock: accessLevels? 'struct' IDENTIFIER structBody;
+
+instanceCreate: 'new' IDENTIFIER '(' (expression (',' expression)*)? ')';
+instancePropAssign: IDENTIFIER '.' IDENTIFIER '=' expression;
+instancePropCall: IDENTIFIER '.' IDENTIFIER;

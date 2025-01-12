@@ -1,5 +1,4 @@
-﻿using System.Net.Http.Headers;
-using Yail.Common;
+﻿using Yail.Common;
 using Yail.Common.Extentions;
 using Yail.Grammar;
 using Yail.Shared;
@@ -13,6 +12,7 @@ namespace Yail;
 public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
 {
     private Dictionary<string, ValueObj?> _variables = new();
+    private Dictionary<string, ValueObj?> _instances = new();
     private Dictionary<string, FunctionDefinition> _functions = new();
     private ValueObj? returnValueFromFunction;
     private readonly HashSet<string> _activeDirectives = new();
@@ -167,23 +167,6 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         }
 
         return newValue;
-    }
-
-    private ValueObj PerformOperation(string operation, ValueObj valueObj)
-    {
-        if (valueObj.DataType != EDataType.Int32 && valueObj.DataType != EDataType.Double)
-        {
-            throw new InvalidOperationException($"Operation '{operation}' is not supported for type '{valueObj.DataType}'.");
-        }
-
-        return operation switch
-        {
-            "++" => OperationsHelper.Add(valueObj, new ValueObj { DataType = valueObj.DataType, Value = 1 }),
-            "--" => OperationsHelper.Subtract(valueObj, new ValueObj { DataType = valueObj.DataType, Value = 1 }),
-            "**" => OperationsHelper.Power(valueObj, new ValueObj { DataType = valueObj.DataType, Value = 2 }),
-            "//" => OperationsHelper.FloorDivide(valueObj, new ValueObj { DataType = valueObj.DataType, Value = 2 }),
-            _ => throw new InvalidOperationException($"Unknown operation '{operation}'.")
-        };
     }
     
     public override ValueObj? VisitIdentifierExpr(ExpressionsParser.IdentifierExprContext context)
@@ -1023,8 +1006,113 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
 
     #endregion
 
+    #region Structs
+
+    public override ValueObj VisitStructBlock(ExpressionsParser.StructBlockContext context)
+    {
+        var structName = context.IDENTIFIER().GetText();
+        var isPublic = context.accessLevels()?.GetText()?.Equals("pub") ?? false;
+
+        var structObj = new StructObj
+        {
+            Name = structName,
+            IsPublic = isPublic
+        };
+        
+        foreach (var structLine in context.structBody().structLine())
+        {
+            var varName = structLine.variableDefine().IDENTIFIER().GetText();
+            var dataType = structLine.variableDefine().DATA_TYPES().GetText().ToDataType();
+
+            structObj.Set(varName, new ValueObj(dataType));
+        }
+
+        if (!_instances.TryAdd(structObj.Name, structObj))
+        {
+            throw new Exception("Instance with this identifier already exists.");
+        }
+        
+        return structObj;
+    }
+
+    public override ValueObj? VisitInstanceCreateExpr(ExpressionsParser.InstanceCreateExprContext context)
+    {
+        var instanceName = context.instanceCreate().IDENTIFIER().GetText();
+        var valueObj = _instances[instanceName];
+        
+        valueObj.ThrowIfNull();
+
+        if (!_variables.TryAdd(instanceName, valueObj))
+        {
+            ExceptionHelper.PrintError($"Variable with name '{instanceName}' is already declared");
+        }
+        
+        return valueObj;
+    }
+
+    public override ValueObj? VisitInstancePropAssign(ExpressionsParser.InstancePropAssignContext context)
+    {
+        var instanceName = context.IDENTIFIER(0).GetText();
+
+        var valueObj = _variables[instanceName];
+
+        valueObj.ThrowIfNull();
+        
+        if (valueObj is not IInstantiable instance)
+        {
+            throw new Exception("This expression is only valid on instances.");
+        }
+
+        var propName = context.IDENTIFIER(1).GetText();
+
+        var prop = instance.Get(propName);
+
+        var value = Visit(context.expression());
+        value.ThrowIfNull();
+        
+        prop.Value = value!.Value;
+
+        return null;
+    }
+
+    public override ValueObj VisitInstancePropCallExpr(ExpressionsParser.InstancePropCallExprContext context)
+    {
+        var instanceName = context.instancePropCall().IDENTIFIER(0).GetText();
+        var propName = context.instancePropCall().IDENTIFIER(1).GetText();
+
+        var valueObj = _variables[instanceName];
+
+        valueObj.ThrowIfNull();
+        
+        if (valueObj is not IInstantiable instance)
+        {
+            throw new Exception("This expression is only valid on instances.");
+        }
+
+        return instance.Get(propName);
+    }
+
+    #endregion
+
     #region Helpers
 
+    private ValueObj PerformOperation(string operation, ValueObj valueObj)
+    {
+        if (valueObj.DataType != EDataType.Int32 && valueObj.DataType != EDataType.Double)
+        {
+            throw new InvalidOperationException($"Operation '{operation}' is not supported for type '{valueObj.DataType}'.");
+        }
+
+        return operation switch
+        {
+            "++" => OperationsHelper.Add(valueObj, new ValueObj { DataType = valueObj.DataType, Value = 1 }),
+            "--" => OperationsHelper.Subtract(valueObj, new ValueObj { DataType = valueObj.DataType, Value = 1 }),
+            "**" => OperationsHelper.Power(valueObj, new ValueObj { DataType = valueObj.DataType, Value = 2 }),
+            "//" => OperationsHelper.FloorDivide(valueObj, new ValueObj { DataType = valueObj.DataType, Value = 2 }),
+            _ => throw new InvalidOperationException($"Unknown operation '{operation}'.")
+        };
+    }
+    
     private bool EvaluateCondition(ExpressionsParser.ExpressionContext conditionContext)
     {
         var conditionResult = Visit(conditionContext);
