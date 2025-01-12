@@ -21,7 +21,7 @@ public class OperationsTest
         var visitor = new ExpressionsVisitor();
         visitor.Visit(tree);
         
-        return output.ToString();
+        return output.ToString().StripWindows();
     }
     
     [Test]
@@ -35,7 +35,7 @@ public class OperationsTest
 
         var actual = RunCode(code);
         
-        Assert.That(actual, Is.EqualTo("6\r\n"));
+        Assert.That(actual, Is.EqualTo("6\n"));
     }
     
     [Test]
@@ -49,7 +49,7 @@ public class OperationsTest
 
         var actual = RunCode(code);
         
-        Assert.That(actual, Is.EqualTo("2\r\n"));
+        Assert.That(actual, Is.EqualTo("2\n"));
     }
     
     [Test]
@@ -63,7 +63,7 @@ public class OperationsTest
 
         var actual = RunCode(code);
         
-        Assert.That(actual, Is.EqualTo("15\r\n"));
+        Assert.That(actual, Is.EqualTo("15\n"));
     }
     
     [Test]
@@ -77,7 +77,7 @@ public class OperationsTest
 
         var actual = RunCode(code);
         
-        Assert.That(actual, Is.EqualTo("5\r\n"));
+        Assert.That(actual, Is.EqualTo("5\n"));
     }
     
     [Test]
@@ -93,6 +93,6 @@ public class OperationsTest
 
         var actual = RunCode(code);
         
-        Assert.That(actual, Is.EqualTo("0\r\n1\r\n"));
+        Assert.That(actual, Is.EqualTo("0\n1\n"));
     }
 }

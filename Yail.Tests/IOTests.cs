@@ -23,7 +23,7 @@ public class IOTests
         var visitor = new ExpressionsVisitor();
         visitor.Visit(tree);
 
-        return output.ToString();
+        return output.ToString().StripWindows();
     }
     
     [Test]
@@ -38,6 +38,6 @@ public class IOTests
         var simulatedInput = "Bob";
         var output = RunCode(code, simulatedInput);
 
-        Assert.That(output, Is.EqualTo("Enter your name:\r\nHello, Bob!\r\n"));
+        Assert.That(output, Is.EqualTo("Enter your name:\nHello, Bob!\n"));
     }
 }
