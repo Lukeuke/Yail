@@ -12,6 +12,31 @@ public class ValueObj
         DataType = dataType;
         IsConst = isConst;
     }
+
+    public ValueObj(EDataType dataType, bool isConst = false)
+    {
+        DataType = dataType;
+        IsConst = isConst;
+        
+        switch (dataType)
+        {
+            case EDataType.Int32:
+                Value = 0;
+                break;
+            case EDataType.Boolean:
+                Value = false;
+                break;
+            case EDataType.String:
+                Value = string.Empty;
+                break;
+            case EDataType.Double:
+                Value = 0.0D;
+                break;
+            default:
+                Value = null;
+                break;
+        }
+    }
     
     public bool IsConst { get; set; }
     public object? Value { get; set; }
