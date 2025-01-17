@@ -97,6 +97,6 @@ foreachBlock: FOREACH '(' 'var' IDENTIFIER 'in' expression ')' block;
 
 structBlock: accessLevels? 'struct' IDENTIFIER structBody;
 
-instanceCreate: 'new' IDENTIFIER '(' (expression (',' expression)*)? ')';
+instanceCreate: 'new' (IDENTIFIER '::')? IDENTIFIER '(' (expression (',' expression)*)? ')';
 instancePropAssign: IDENTIFIER '.' IDENTIFIER '=' expression;
 instancePropCall: IDENTIFIER '.' IDENTIFIER;

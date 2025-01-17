@@ -1,31 +1,9 @@
-﻿using Antlr4.Runtime;
-using Yail.Grammar;
+﻿using Yail.Tests.Shared;
 
 namespace Yail.Tests;
 
-public class IOTests
+public class IOTests : BaseYailTest
 {
-    private string RunCode(string code, string input = "")
-    {
-        using var output = new StringWriter();
-        Console.SetOut(output);
-
-        using var inputReader = new StringReader(input);
-        Console.SetIn(inputReader);
-
-        var inputStream = new AntlrInputStream(code);
-        var lexer = new ExpressionsLexer(inputStream);
-        var tokenStream = new CommonTokenStream(lexer);
-        var parser = new ExpressionsParser(tokenStream);
-
-        var tree = parser.program();
-
-        var visitor = new ExpressionsVisitor();
-        visitor.Visit(tree);
-
-        return output.ToString().StripWindows();
-    }
-    
     [Test]
     public void TestInputOutput()
     {

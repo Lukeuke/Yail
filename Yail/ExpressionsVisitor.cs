@@ -1015,8 +1015,8 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
 
         var structObj = new StructObj
         {
-            Name = structName,
-            IsPublic = isPublic
+            Name = $"{_currentPackage}::{structName}",
+            IsPublic = isPublic,
         };
         
         foreach (var structLine in context.structBody().structLine())
@@ -1029,7 +1029,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
 
         if (!_instances.TryAdd(structObj.Name, structObj))
         {
-            throw new Exception("Instance with this identifier already exists.");
+            throw new Exception("Instance with this identifier already exists in this package.");
         }
         
         return structObj;
@@ -1037,8 +1037,21 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
 
     public override ValueObj? VisitInstanceCreateExpr(ExpressionsParser.InstanceCreateExprContext context)
     {
-        var instanceName = context.instanceCreate().IDENTIFIER().GetText();
-        var valueObj = _instances[instanceName];
+        var instanceName = string.Empty;
+        var packageName = "main";
+        
+        try
+        {
+            instanceName = context.instanceCreate().IDENTIFIER(1).GetText();
+            packageName = context.instanceCreate().IDENTIFIER(0).GetText();
+        }
+        catch
+        {
+            instanceName = context.instanceCreate().IDENTIFIER(0).GetText();
+        }
+        
+        
+        var valueObj = _instances[$"{packageName}::{instanceName}"];
         
         valueObj.ThrowIfNull();
 

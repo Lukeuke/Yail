@@ -1,4 +1,4 @@
-﻿namespace Yail.Tests;
+﻿namespace Yail.Tests.Shared;
 
 public static class TestExtension
 {

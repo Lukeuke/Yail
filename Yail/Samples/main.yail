@@ -1,12 +1,20 @@
-﻿package main
+﻿package test
+
+pub struct Point {
+    var x i32;
+    var z i32;
+    var y i32;
+}
+
+package main
 
 pub struct Point {
     var x i32;
     var y i32;
 }
 
-var p = new Point();
-p.x = 2;
+var p = new test::Point();
+p.z = 2;
 p.y = 2;
 
-print(p.x);
+print(p.y);
