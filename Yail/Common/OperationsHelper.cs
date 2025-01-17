@@ -1,4 +1,5 @@
 ﻿using Yail.Shared;
+using Yail.Shared.Objects;
 
 namespace Yail.Common;
 
@@ -6,6 +7,16 @@ public static class OperationsHelper
 {
     public static ValueObj Add(ValueObj left, ValueObj right)
     {
+        if (left is ArrayObj leftArr && right is ArrayObj rightArr)
+        {
+            return leftArr + rightArr;
+        }
+
+        if (left is ArrayObj || right is ArrayObj)
+        {
+            return ScalarAdd(left, right);
+        }
+        
         if (left.DataType == EDataType.String || right.DataType == EDataType.String || right.DataType == EDataType.Char)
         {
             // String concatenation
@@ -299,5 +310,55 @@ public static class OperationsHelper
 
             _ => throw new InvalidOperationException($"Unsupported operation for types {lhs.DataType} and {rhs.DataType}")
         };
+    }
+
+    public static ArrayObj ScalarAdd(ValueObj left, ValueObj right)
+    {
+        var output = new ArrayObj(new List<ValueObj>());
+        
+        // pre add
+        if (left.DataType == EDataType.Int32 && right is ArrayObj rightArr)
+        {
+            var val1 = left.GetValue<int>();
+            var val2 = rightArr.GetValue<List<ValueObj>>();
+
+            foreach (var x in val2)
+            {
+                output.Push(new ValueObj(val1 + x.GetValue<int>(), EDataType.Int32));
+            }
+        }
+        // post add
+        else if (left is ArrayObj leftArr && right.DataType == EDataType.Int32)
+        {
+            var val1 = right.GetValue<int>();
+            var val2 = leftArr.GetValue<List<ValueObj>>();
+
+            foreach (var x in val2)
+            {
+                output.Push(new ValueObj(x.GetValue<int>() + val1, EDataType.Int32));
+            }
+        }
+        // pre add
+        else if (right is ArrayObj rightArr2 && rightArr2.Get().First().DataType == EDataType.String)
+        {
+            var val = rightArr2.GetValue<List<ValueObj>>();
+            
+            foreach (var x in val)
+            {
+                output.Push(new ValueObj(left.Value + x.GetValue<string>(), EDataType.String));
+            }
+        }
+        // post add
+        else if (left is ArrayObj leftArr2 && leftArr2.Get().First().DataType == EDataType.String)
+        {
+            var val = leftArr2.GetValue<List<ValueObj>>();
+            
+            foreach (var x in val)
+            {
+                output.Push(new ValueObj(x.GetValue<string>() + right.Value, EDataType.String));
+            }
+        }
+        
+        return output;
     }
 }
