@@ -42,6 +42,11 @@ public class ValueObj
     public object? Value { get; set; }
     public EDataType DataType { get; set; }
 
+    public TValue? GetValue<TValue>()
+    {
+        return Value is null ? default : (TValue)Value;
+    }
+
     public override bool Equals(object? obj)
     {
         if (obj is ValueObj other)

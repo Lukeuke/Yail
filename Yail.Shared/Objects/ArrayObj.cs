@@ -6,7 +6,7 @@ public class ArrayObj : ValueObj, IAccessible
 {
     public List<ValueObj> Items => Value as List<ValueObj>;
     
-    public ArrayObj(List<ValueObj> items)
+    public ArrayObj(IEnumerable<ValueObj> items)
     {
         Value = items;
         DataType = EDataType.Array;
@@ -55,10 +55,25 @@ public class ArrayObj : ValueObj, IAccessible
         if (idx >= 0 && idx < Items.Count)
             Items[idx] = value;
     }
+
+    public EDataType GetItemsDataType()
+    {
+        return Get().Select(x => x.DataType).FirstOrDefault();
+    }
     
     public override void Print(bool newLine = false)
     {
         var x = Get().Select(x => x.Value.ToString()).ToArray();
+
+        if (GetItemsDataType() == EDataType.String)
+        {
+            x = x.Select(x => $@"""{x}""").ToArray();
+        }
+        if (GetItemsDataType() == EDataType.Char)
+        {
+            x = x.Select(x => $@"'{x}'").ToArray();
+        }
+        
         var output = $"[{string.Join(", ", x)}]";
         
         if (newLine)
@@ -70,5 +85,10 @@ public class ArrayObj : ValueObj, IAccessible
     public void RemoveAt(int idxValue)
     {
         Items.RemoveAt(idxValue);
+    }
+    
+    public static ArrayObj operator+ (ArrayObj obj1, ArrayObj obj2)
+    {
+        return new ArrayObj(obj1.Get().Concat(obj2.Get()));
     }
 }
