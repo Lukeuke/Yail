@@ -6,7 +6,7 @@ using Yail.Grammar;
 using Yail.Shared.Helpers;
 
 #if DEBUG
-var filePath = """Samples\main.yail""";
+var filePath = """Samples/main.yail""";
 var input = File.ReadAllText(filePath);
 Console.ForegroundColor = ConsoleColor.Yellow;
 Console.WriteLine("[Debug mode]");
@@ -33,7 +33,10 @@ if (args.Length > 0)
 
 var packages = input.ExtractUsings();
 
-var folderPath = Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE") ?? string.Empty, ".yail", "lib");
+var os = Environment.OSVersion.ToString();
+
+var folderRoot = os.Contains("Windows") ? "USERPROFILE" : "HOME";
+var folderPath = Path.Combine(Environment.GetEnvironmentVariable(folderRoot) ?? string.Empty, ".yail", "lib");
 var files = FileExtensionHelper.GetFilesWithExtensions(folderPath, new[] { ".y", ".yail" });
 
 FillBuiltInPackages();

@@ -229,9 +229,12 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         return newValue;
     }
 
-    public override ValueObj? VisitConstant(ExpressionsParser.ConstantContext context)
+    public override ValueObj VisitConstant(ExpressionsParser.ConstantContext context)
     {
-        var result = new ValueObj();
+        var result = new ValueObj
+        {
+            IsConst = true
+        };
         var value = context.GetText();
         
         if (context.INTEGER() is not null)
