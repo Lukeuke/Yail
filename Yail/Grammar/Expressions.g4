@@ -24,6 +24,10 @@ block: '{' line* '}';
 structBody: '{' structLine* '}';
 structLine: variableDefine ';'; 
 
+// structs new calling 'new'
+instanceBody: '{' instanceLine* '}';
+instanceLine: assignment ';'; 
+
 directive: '#' 'use' USE_IDENTIFIERS;
 
 multiplyOp: '*' | '/' | '%';
@@ -67,7 +71,7 @@ packageDeclaration: 'package' IDENTIFIER;
 usingDirective: 'using' IDENTIFIER;
 
 variableDeclaration: 'var' IDENTIFIER '=' REFERENCE? expression;
-variableDefine: 'var' IDENTIFIER DATA_TYPES;
+variableDefine: 'var' IDENTIFIER DATA_TYPES ('=' expression)?;
 functionDeclaration: (accessLevels)? 'funky' IDENTIFIER '(' (parameterList)? ')' DATA_TYPES block;
 
 parameterList: parameter (',' parameter)*;
@@ -97,6 +101,6 @@ foreachBlock: FOREACH '(' 'var' IDENTIFIER 'in' expression ')' block;
 
 structBlock: accessLevels? 'struct' IDENTIFIER structBody;
 
-instanceCreate: 'new' (IDENTIFIER '::')? IDENTIFIER '(' (expression (',' expression)*)? ')';
+instanceCreate: 'new' (IDENTIFIER '::')? IDENTIFIER '(' (expression (',' expression)*)? ')' instanceBody?;
 instancePropAssign: IDENTIFIER '.' IDENTIFIER '=' expression;
 instancePropCall: IDENTIFIER '.' IDENTIFIER;

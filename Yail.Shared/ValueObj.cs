@@ -77,4 +77,13 @@ public class ValueObj
         
         Console.Write(val);
     }
+    
+    public bool ValueEquals(object? obj)
+    {
+        if (obj is ValueObj other)
+        {
+            return Value.GetType() == other.Value.GetType() && DataType == other.DataType;
+        }
+        return false;
+    }
 }
