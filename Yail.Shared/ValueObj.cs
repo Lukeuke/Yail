@@ -51,6 +51,7 @@ public class ValueObj
     {
         if (obj is ValueObj other)
         {
+            // BUG?: this may now now work? (Not much tested) Due to #deadff8 commit (Comparing consts)
             return IsConst == other.IsConst &&
                    Equals(Value, other.Value) &&
                    DataType == other.DataType;
