@@ -1,4 +1,5 @@
 ﻿using Yail.Shared.Abstract;
+using Yail.Shared.Helpers;
 
 namespace Yail.Shared.Objects;
 
@@ -24,6 +25,19 @@ public class StructObj : ValueObj, IInstantiable
         Value = list;
     }
 
+    public void Update(string variableName, ValueObj valueObj)
+    {
+        var fields = Get();
+        
+        if (!fields.TryGetValue(variableName, out var prevValue))
+            ExceptionHelper.PrintError($"Variable '{variableName}' is not defined in struct '{Name}'");
+
+        if (!prevValue.ValueEquals(valueObj))
+            ExceptionHelper.PrintError($"Data types must be equal.");
+
+        fields[variableName] = valueObj;
+    }
+    
     public Dictionary<string, ValueObj> Get()
     {
         return Value as Dictionary<string, ValueObj>;

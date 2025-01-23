@@ -51,11 +51,18 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             return null;
         }
         
+        if (_currentStruct is not null)
+        {
+            if (!_instances.TryGetValue(_currentStruct, out var currStruct))
+                ExceptionHelper.PrintError($"Struct '{_currentStruct}' is not defined.");
+            
+            (currStruct as StructObj)!.Update(variableName, value);
+            return null;
+        }
+        
         if (!_variables.TryGetValue(variableName, out var prevVal))
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.Error.WriteLine($"Variable '${variableName}' is not defined.");
-            Environment.Exit(1);
+            ExceptionHelper.PrintError($"Variable '${variableName}' is not defined.");
         }
 
         if (prevVal is IAccessible accessible)
@@ -1027,7 +1034,18 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
             var varName = structLine.variableDefine().IDENTIFIER().GetText();
             var dataType = structLine.variableDefine().DATA_TYPES().GetText().ToDataType();
 
-            structObj.Set(varName, new ValueObj(dataType));
+            var expr = structLine.variableDefine().expression();
+
+            if (expr is not null)
+            {
+                var defaultVal = Visit(expr);
+                
+                structObj.Set(varName, defaultVal);
+            }
+            else
+            {
+                structObj.Set(varName, new ValueObj(dataType));
+            }
         }
 
         if (!_instances.TryAdd(structObj.Name, structObj))
@@ -1038,6 +1056,7 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         return structObj;
     }
 
+    private string? _currentStruct;
     public override ValueObj? VisitInstanceCreateExpr(ExpressionsParser.InstanceCreateExprContext context)
     {
         var instanceName = string.Empty;
@@ -1052,7 +1071,13 @@ public sealed class ExpressionsVisitor : ExpressionsBaseVisitor<ValueObj?>
         {
             instanceName = context.instanceCreate().IDENTIFIER(0).GetText();
         }
-        
+
+        if (context.instanceCreate().instanceBody() is not null)
+        {
+            _currentStruct = $"{packageName}::{instanceName}";
+            Visit(context.instanceCreate().instanceBody());
+            _currentStruct = null;
+        }
         
         var valueObj = _instances[$"{packageName}::{instanceName}"];
         
